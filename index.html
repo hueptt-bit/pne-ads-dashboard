@@ -110,6 +110,9 @@ a:hover { text-decoration: underline; }
 .empty { text-align: center; padding: 40px; color: #6b6a65; font-size: 13px; }
 .note-cell { font-size: 11px; color: #9f9e99; font-style: italic; }
 footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px solid #e0dfd8; margin-top: 4px; }
+.btn-save { padding:4px 12px; border-radius:6px; border:1px solid #d0cfc8; background:#fff; font-size:11px; font-weight:600; color:#1d4ed8; cursor:pointer; transition:all .12s; white-space:nowrap; }
+.btn-save:hover:not(.saving) { background:#eff6ff; border-color:#93c5fd; }
+.btn-save.saving { color:#6b7280; cursor:default; }
 </style>
 </head>
 <body>
@@ -119,9 +122,10 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
     <h1>Ads Link Tracker — PNE</h1>
     <div class="meta">Hôm nay: <span id="today-str"></span></div>
   </div>
-  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
     <div class="meta" id="db-meta"></div>
     <div id="sync-status" style="font-size:11px;color:#6b6a65"></div>
+    <button class="btn-save" id="btn-save" onclick="saveToDB()">💾 Lưu thay đổi</button>
   </div>
 </div>
 
@@ -189,8 +193,8 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
 <footer id="footer-note"></footer>
 
 <script>
-const DB_UPDATED = "2026-04-24";
-const DB_UPDATED_TIME = "15:03";
+const DB_UPDATED = "2026-04-25";
+const DB_UPDATED_TIME = "14:30";
 const LINKS = [
   {
     "id": "dhd-001",
@@ -444,16 +448,28 @@ const LINKS = [
     "person": null
   },
   {
+    "id": "duc-onl-thuimoi",
+    "program": "Tiếng",
+    "section": "Online LKG Thư mời",
+    "channel": "Đức",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122251027394075171",
+    "expiry_date": "2026-04-20",
+    "active": true,
+    "note": "",
+    "person": null,
+    "needs_renewal": false
+  },
+  {
     "id": "006",
     "program": "Tiếng",
     "section": "Offline LKG Thư mời",
     "channel": "Đức",
     "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122251028114075171",
-    "expiry_date": "2026-05-30",
+    "expiry_date": "2026-04-27",
     "active": true,
     "note": "",
     "person": null,
-    "needs_renewal": true
+    "needs_renewal": false
   },
   {
     "id": "007",
@@ -949,7 +965,7 @@ const LINKS = [
     "section": "Online LKG Ghi danh",
     "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122171082074075171",
     "expiry_date": "2026-04-20",
-    "needs_renewal": true,
+    "needs_renewal": false,
     "active": true,
     "note": "",
     "channel": "Đức",
@@ -1639,6 +1655,45 @@ const LINKS = [
     "active": true,
     "note": "Không có thông tin lương",
     "person": null
+  },
+  {
+    "id": "t-new-001",
+    "program": "Tiếng",
+    "section": "Dự bị hay Đại học",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/duhocducphuongnam/posts/1271547035170812",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "t-new-002",
+    "program": "Tiếng",
+    "section": "Ngày Hội Du Học",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/1328462929102116",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "t-new-003",
+    "program": "Tiếng",
+    "section": "Giới thiệu các trường",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/1729007464805681",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
   }
 ];
 
@@ -1965,6 +2020,55 @@ function loadFromSheet() {
   s.src = SHEET_API + '?callback=' + cbName + '&t=' + Date.now();
   document.head.appendChild(s);
 }
+
+// ─── LƯU THAY ĐỔI VỀ ads_links_db.json ─────────────────────────────────────
+function fallbackDownload(blob) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'ads_links_db.json';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function saveToDB() {
+  const btn = document.getElementById('btn-save');
+  const json = JSON.stringify(LINKS, null, 2);
+  const blob = new Blob([json], {type: 'application/json'});
+
+  if (window.showSaveFilePicker) {
+    btn.textContent = '⟳ Đang lưu...';
+    btn.classList.add('saving');
+    window.showSaveFilePicker({
+      suggestedName: 'ads_links_db.json',
+      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+    })
+    .then(handle => handle.createWritable())
+    .then(writable => writable.write(blob).then(() => writable.close()))
+    .then(() => {
+      btn.textContent = '✓ Đã lưu!';
+      btn.style.color = '#166534';
+      setTimeout(() => {
+        btn.textContent = '💾 Lưu thay đổi';
+        btn.style.color = '';
+        btn.classList.remove('saving');
+      }, 2500);
+    })
+    .catch(e => {
+      btn.textContent = '💾 Lưu thay đổi';
+      btn.style.color = '';
+      btn.classList.remove('saving');
+      if (e.name !== 'AbortError') fallbackDownload(blob);
+    });
+  } else {
+    // Fallback: tải xuống file, user tự thay vào thư mục
+    fallbackDownload(blob);
+    btn.textContent = '✓ Đã tải xuống';
+    btn.style.color = '#166534';
+    setTimeout(() => { btn.textContent = '💾 Lưu thay đổi'; btn.style.color = ''; }, 2500);
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 // Render offline trước, sau đó fetch realtime từ sheet
 render();
