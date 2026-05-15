@@ -2013,9 +2013,7 @@ function render() {
   // Rows: thêm lọc theo status tab để hiện bảng
   const rows = base.filter(l => {
     const st = getStatus(l);
-    // Tab "HẾT HẠN" gộp cả link ngừng lẫn link gia hạn quá deadline
-    if (aS === 'HẾT HẠN' && st !== 'HẾT HẠN' && st !== 'ĐÃ NGỪNG') return false;
-    if (aS !== 'all' && aS !== 'HẾT HẠN' && st !== aS) return false;
+    if (aS !== 'all' && st !== aS) return false;
     return true;
   }).sort((a,b)=>{
     const sa=getStatus(a), sb=getStatus(b);
