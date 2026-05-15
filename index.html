@@ -143,8 +143,8 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
   </div>
 
   <div class="cards">
-    <div class="card red">  <div class="card-label">Cần xử lý (quá hạn)</div><div class="card-value" id="c-het">0</div></div>
-    <div class="card amber"> <div class="card-label">Sắp tới hạn</div>        <div class="card-value" id="c-sap">0</div></div>
+    <div class="card red">  <div class="card-label">Cần gia hạn (quá hạn)</div><div class="card-value" id="c-het">0</div></div>
+    <div class="card amber"> <div class="card-label">Sắp hết — cần gia hạn</div><div class="card-value" id="c-sap">0</div></div>
     <div class="card green"> <div class="card-label">Còn hạn</div>            <div class="card-value" id="c-ok">0</div></div>
     <div class="card blue">  <div class="card-label">Luôn chạy</div>          <div class="card-value" id="c-always">0</div></div>
   </div>
@@ -1983,10 +1983,10 @@ function rowHtml(l) {
 let aP='all', aS='all', aLang='all', aPerson='all', q='';
 
 function updateCards(rows) {
-  // HẾT HẠN = cả link gia hạn quá deadline + link đã ngừng theo kế hoạch
-  document.getElementById('c-het').textContent    = rows.filter(l=>getStatus(l)==='HẾT HẠN'||getStatus(l)==='ĐÃ NGỪNG').length;
-  // Sắp tới: cả GIA HẠN (≤14 ngày, cần gia hạn) + SẮP HẾT (≤7 ngày, sắp ngừng)
-  document.getElementById('c-sap').textContent    = rows.filter(l=>({'GIA HẠN':1,'SẮP HẾT':1})[getStatus(l)]).length;
+  // HẾT HẠN = chỉ link needs_renewal=true đã quá deadline (không gộp ĐÃ NGỪNG)
+  document.getElementById('c-het').textContent    = rows.filter(l=>getStatus(l)==='HẾT HẠN').length;
+  // Sắp tới: chỉ GIA HẠN (needs_renewal=true, ≤14 ngày) — không gộp SẮP HẾT
+  document.getElementById('c-sap').textContent    = rows.filter(l=>getStatus(l)==='GIA HẠN').length;
   document.getElementById('c-ok').textContent     = rows.filter(l=>getStatus(l)==='OK').length;
   document.getElementById('c-always').textContent = rows.filter(l=>getStatus(l)==='LUÔN CHẠY').length;
 }
