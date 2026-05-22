@@ -3143,9 +3143,9 @@ function rowHtml(l) {
   const shortUrl=l.url.replace(/https?:\/\/(www\.)?facebook\.com\//,'fb/');
   let renewBtn='';
   if (ORIG[l.id]&&ORIG[l.id].expiry_date&&l.active) {
-    if (!l.expiry_date)    renewBtn=`<button type="button" class="btn-renewal is-always"  onclick="toggleRenewal('${l.id}')" title="Luôn chạy — click để đổi">∞ Luôn chạy</button>`;
-    else if (l.needs_renewal) renewBtn=`<button type="button" class="btn-renewal is-renewal" onclick="toggleRenewal('${l.id}')" title="Cần gia hạn — click để đổi">↻ Gia hạn</button>`;
-    else               renewBtn=`<button type="button" class="btn-renewal no-renewal" onclick="toggleRenewal('${l.id}')" title="Ngừng theo kế hoạch — click để đổi">⏹ Ngừng</button>`;
+    if (!l.expiry_date)    renewBtn=`<span class="btn-renewal is-always">∞ Luôn chạy</span>`;
+    else if (l.needs_renewal) renewBtn=`<span class="btn-renewal is-renewal">↻ Gia hạn</span>`;
+    else               renewBtn=`<span class="btn-renewal no-renewal">⏹ Ngừng</span>`;
   }
   return `<tr data-lid="${l.id}">
     <td><span class="badge ${pb}">${progLabel}</span></td>
@@ -3472,9 +3472,7 @@ function startCountdown() {
   _countdownInterval = setInterval(function() {
     _nextRefreshIn--;
     const statusEl = document.getElementById('sync-status');
-    if (statusEl && statusEl.dataset.ok === '1') {
-      statusEl.textContent = statusEl.dataset.base + ' · refresh sau ' + _nextRefreshIn + 's';
-    }
+    // không hiện countdown
     if (_nextRefreshIn <= 0) {
       clearInterval(_countdownInterval);
       loadFromSheet();
