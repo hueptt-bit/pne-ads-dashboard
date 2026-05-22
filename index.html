@@ -76,8 +76,8 @@ tr:hover td { background: #faf9f7; }
 .type-giahan{ background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; }
 .toggle-renewal { cursor:pointer; user-select:none; }
 .toggle-renewal:hover { opacity:.75; }
-.btn-renewal { display:inline-flex; align-items:center; gap:3px; padding:3px 8px; border-radius:5px; border:1px solid; font-size:10px; font-weight:600; cursor:pointer; white-space:nowrap; background:#fff; transition:opacity .1s; }
-.btn-renewal:hover { opacity:.75; }
+.btn-renewal { display:inline-flex; align-items:center; gap:3px; padding:3px 8px; border-radius:5px; border:1px solid; font-size:10px; font-weight:600; cursor:default; white-space:nowrap; background:#fff; user-select:none; }
+.btn-renewal:hover { opacity:1; }
 .btn-renewal.is-renewal  { border-color:#fdba74; color:#c2410c; background:#fff7ed; }
 .btn-renewal.no-renewal  { border-color:#e2e8f0; color:#94a3b8; background:#f8fafc; }
 .btn-renewal.is-always   { border-color:#bfdbfe; color:#1d4ed8; background:#eff6ff; }
@@ -3089,13 +3089,12 @@ document.getElementById('cnt-khac').textContent  = LINKS.filter(l=>['Thuê Phòn
 
 function daysDiff(exp) { return exp ? Math.floor((new Date(exp)-today)/86400000) : null; }
 function getStatus(l) {
+  if (!l.active) return 'ĐÃ NGỪNG';       // X trong cột Ngừng chạy → luôn là Đã ngừng
   if (!l.expiry_date) return 'LUÔN CHẠY';
   const d = daysDiff(l.expiry_date);
   if (l.needs_renewal) {
-    // Loại gia hạn: cảnh báo sớm hơn (≤14 ngày), quá hạn = khẩn cấp
     return d < 0 ? 'HẾT HẠN' : d <= 14 ? 'GIA HẠN' : 'OK';
   } else {
-    // Loại chạy tới ngừng: hết hạn = đã ngừng theo kế hoạch (không báo động)
     return d < 0 ? 'ĐÃ NGỪNG' : d <= 7 ? 'SẮP HẾT' : 'OK';
   }
 }
