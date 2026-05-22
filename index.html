@@ -194,7 +194,7 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
 
 <script>
 let DB_UPDATED = "2026-05-22";
-const DB_UPDATED_TIME = "10:00";
+const DB_UPDATED_TIME = "10:12";
 const LINKS = [
   {
     "id": "CDVBA_Album_DangKyTDChung_0525_3185",
@@ -2204,7 +2204,7 @@ const LINKS = [
     "section": "Chung",
     "channel": "",
     "page": "",
-    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1052382120251047?rdid=z5Bwnhc1E7li1RLk\#",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1052382120251047?rdid=z5Bwnhc1E7li1RLk\\#",
     "expiry_date": null,
     "needs_renewal": false,
     "active": true,
@@ -3222,12 +3222,15 @@ function render() {
   tb.innerHTML = rows.map(rowHtml).join('');
 }
 
-document.querySelectorAll('.ptab').forEach(t=>t.addEventListener('click',()=>{
+// Event delegation — bền hơn, không bị mất khi DOM thay đổi
+document.getElementById('prog-tabs').addEventListener('click', function(e) {
+  const t = e.target.closest('.ptab');
+  if (!t) return;
   document.querySelectorAll('.ptab').forEach(x=>x.classList.remove('active'));
   t.classList.add('active'); aP=t.dataset.p;
   document.getElementById('lang-sel').style.display = (aP==='Tiếng'||aP==='all')?'':'none';
   render();
-}));
+});
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
   t.classList.add('active'); aS=t.dataset.s; render();
@@ -3457,6 +3460,54 @@ function saveToDB() {
 // Render offline trước, sau đó fetch realtime từ sheet
 render();
 loadFromSheet();
+
+// ─── AUTO-REFRESH ────────────────────────────────────────────────────────────
+const AUTO_REFRESH_SEC = 120; // tự động fetch lại mỗi 2 phút
+let _nextRefreshIn = AUTO_REFRESH_SEC;
+let _countdownInterval = null;
+
+function startCountdown() {
+  _nextRefreshIn = AUTO_REFRESH_SEC;
+  clearInterval(_countdownInterval);
+  _countdownInterval = setInterval(function() {
+    _nextRefreshIn--;
+    const statusEl = document.getElementById('sync-status');
+    if (statusEl && statusEl.dataset.ok === '1') {
+      statusEl.textContent = statusEl.dataset.base + ' · refresh sau ' + _nextRefreshIn + 's';
+    }
+    if (_nextRefreshIn <= 0) {
+      clearInterval(_countdownInterval);
+      loadFromSheet();
+    }
+  }, 1000);
+}
+
+// Cập nhật số đếm trên tab buttons sau khi LINKS được thay thế
+function updateTabCounts() {
+  document.getElementById('cnt-all').textContent   = LINKS.length;
+  document.getElementById('cnt-dhd').textContent   = LINKS.filter(l=>l.program==='Du học nghề Đức').length;
+  document.getElementById('cnt-dhdd').textContent  = LINKS.filter(l=>l.program==='Du học Đức').length;
+  document.getElementById('cnt-ao').textContent    = LINKS.filter(l=>l.program==='CDVBA').length;
+  document.getElementById('cnt-dhk').textContent   = LINKS.filter(l=>l.program==='Du học Hàn Quốc').length;
+  document.getElementById('cnt-tieng').textContent = LINKS.filter(l=>l.program.startsWith('Tiếng')).length;
+  document.getElementById('cnt-osd').textContent   = LINKS.filter(l=>l.program==='Kỳ thi OSD').length;
+  document.getElementById('cnt-khac').textContent  = LINKS.filter(l=>['Thuê Phòng','EduCRM'].includes(l.program)).length;
+  const footerNote = document.getElementById('footer-note');
+  if (footerNote) footerNote.textContent = 'Double-click để mở · Cập nhật bởi Claude khi thêm link mới · ' + LINKS.length + ' link đang theo dõi';
+}
+
+// Hook vào processSheetRows để bắt đầu đếm sau mỗi lần load thành công
+const _origProcessSheetRows = processSheetRows;
+processSheetRows = function(data) {
+  _origProcessSheetRows(data);
+  updateTabCounts();
+  const statusEl = document.getElementById('sync-status');
+  if (statusEl) {
+    statusEl.dataset.ok = '1';
+    statusEl.dataset.base = statusEl.textContent;
+  }
+  startCountdown();
+};
 </script>
 </body>
 </html>
