@@ -113,6 +113,11 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
 .btn-save { padding:4px 12px; border-radius:6px; border:1px solid #d0cfc8; background:#fff; font-size:11px; font-weight:600; color:#1d4ed8; cursor:pointer; transition:all .12s; white-space:nowrap; }
 .btn-save:hover:not(.saving) { background:#eff6ff; border-color:#93c5fd; }
 .btn-save.saving { color:#6b7280; cursor:default; }
+.btn-edit { padding:3px 10px; border-radius:5px; border:1px solid #93c5fd; background:#eff6ff; color:#1d4ed8; font-size:11px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .12s; }
+.btn-edit:hover:not(:disabled) { background:#dbeafe; }
+.btn-edit:disabled { opacity:.5; cursor:default; }
+.input-user { width:90px; padding:4px 8px; border-radius:6px; border:1px solid #d0cfc8; background:#fff; font-size:12px; color:#1a1a18; outline:none; }
+.input-user:focus { border-color:#93c5fd; }
 </style>
 </head>
 <body>
@@ -125,7 +130,11 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
   <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
     <div class="meta" id="db-meta"></div>
     <div id="sync-status" style="font-size:11px;color:#6b6a65"></div>
-    <button class="btn-save" id="btn-save" onclick="saveToDB()">💾 Lưu thay đổi</button>
+    <div style="display:flex;align-items:center;gap:8px">
+      <label style="font-size:11px;color:#6b6a65;white-space:nowrap">Tên bạn:</label>
+      <input class="input-user" id="user-name" type="text" placeholder="Nhập tên..." title="Tên hiển thị khi cập nhật hạn lên Sheet">
+      <button class="btn-save" id="btn-save" onclick="saveToDB()">💾 Lưu thay đổi</button>
+    </div>
   </div>
 </div>
 
@@ -185,6 +194,7 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
       <th style="width:90px">Phụ trách</th>
       <th>Link</th>
       <th style="width:120px">Ghi chú</th>
+      <th style="width:90px">Hành động</th>
     </tr></thead>
     <tbody id="tb"></tbody>
   </table>
@@ -194,7 +204,7 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
 
 <script>
 let DB_UPDATED = "2026-05-30";
-const DB_UPDATED_TIME = "14:42";
+const DB_UPDATED_TIME = "15:12";
 const LINKS = [
   {
     "id": "CDVBA_Album_DangKyTDChung_0525_3185",
@@ -3159,6 +3169,16 @@ function rowHtml(l) {
     else if (l.needs_renewal) renewBtn=`<span class="btn-renewal is-renewal">↻ Gia hạn</span>`;
     else               renewBtn=`<span class="btn-renewal no-renewal">⏹ Ngừng</span>`;
   }
+  // Hành động: chỉ hiện với link có ngày hết hạn (needs_renewal) và đang active
+  const safeId = l.id.replace(/'/g, "\\'");
+  let actionCell = '<td></td>';
+  if (l.needs_renewal && l.active) {
+    const defDate = l.expiry_date || '';
+    actionCell = `<td><div class="action-cell">
+      <input type="date" class="input-date" value="${defDate}" title="Chọn ngày hết hạn mới">
+      <button class="btn-upd" onclick="updateExpiry('${safeId}',this)">↻ Cập nhật hạn</button>
+    </div></td>`;
+  }
   return `<tr data-lid="${l.id}">
     <td><span class="badge ${pb}">${progLabel}</span></td>
     <td title="${l.section}">${l.section}</td>
@@ -3170,6 +3190,7 @@ function rowHtml(l) {
     <td style="font-size:11px;color:${l.person?'#1a1a18':'#bbb'}">${l.person||'—'}</td>
     <td><a href="${l.url}" target="_blank" title="${l.url}">${shortUrl}</a></td>
     <td class="note-cell" title="${l.note||''}">${l.note||''}</td>
+    ${actionCell}
   </tr>`;
 }
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3229,7 +3250,7 @@ function render() {
   document.getElementById('cnt-badge').textContent = rows.length + ' / ' + LINKS.length + ' link';
 
   const tb = document.getElementById('tb');
-  if (!rows.length) { tb.innerHTML='<tr><td colspan="10" class="empty">Không có link phù hợp</td></tr>'; return; }
+  if (!rows.length) { tb.innerHTML='<tr><td colspan="11" class="empty">Không có link phù hợp</td></tr>'; return; }
 
   tb.innerHTML = rows.map(rowHtml).join('');
 }
@@ -3505,6 +3526,74 @@ function updateTabCounts() {
   const footerNote = document.getElementById('footer-note');
   if (footerNote) footerNote.textContent = 'Double-click để mở · Cập nhật bởi Claude khi thêm link mới · ' + LINKS.length + ' link đang theo dõi';
 }
+
+// ─── CẬP NHẬT HẠN LÊN GOOGLE SHEET ────────────────────────────────────────────
+/**
+ * Gọi khi bấm "Cập nhật hạn" trên 1 row.
+ * @param {string} id        - Content ID
+ * @param {HTMLElement} btn  - Nút bấm (để cập nhật trạng thái)
+ */
+function updateExpiry(id, btn) {
+  const input = btn.previousElementSibling;
+  const date  = input ? input.value : '';  // YYYY-MM-DD
+  if (!date) { alert('Vui lòng chọn ngày hết hạn mới.'); return; }
+
+  const user = (document.getElementById('user-name').value || '').trim() || 'Dashboard';
+
+  btn.disabled    = true;
+  btn.textContent = '⟳ Đang lưu...';
+
+  const url = SHEET_API
+    + '?action=set_expiry'
+    + '&id='   + encodeURIComponent(id)
+    + '&date=' + encodeURIComponent(date)
+    + '&user=' + encodeURIComponent(user)
+    + '&t='    + Date.now();
+
+  fetch(url, { credentials: 'omit', mode: 'cors' })
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      if (data.ok) {
+        btn.textContent      = '✓ Đã lưu!';
+        btn.style.background = '#dcfce7';
+        btn.style.color      = '#166534';
+        btn.style.borderColor= '#86efac';
+        // Cập nhật LINKS trong bộ nhớ
+        const link = LINKS.find(function(l) { return l.id === id; });
+        if (link) { link.expiry_date = date; link.needs_renewal = true; }
+        setTimeout(function() {
+          btn.disabled = false;
+          btn.textContent = '↻ Cập nhật hạn';
+          btn.style.background = '';
+          btn.style.color = '';
+          btn.style.borderColor = '';
+        }, 3000);
+      } else {
+        btn.textContent = '✗ Lỗi';
+        btn.style.color = '#b91c1c';
+        alert('Lỗi cập nhật: ' + (data.error || 'Không xác định'));
+        setTimeout(function() {
+          btn.disabled = false;
+          btn.textContent = '↻ Cập nhật hạn';
+          btn.style.color = '';
+        }, 2000);
+      }
+    })
+    .catch(function(err) {
+      btn.textContent = '✗ Lỗi mạng';
+      btn.style.color = '#b91c1c';
+      alert('Lỗi kết nối: ' + err.message);
+      setTimeout(function() {
+        btn.disabled = false;
+        btn.textContent = '↻ Cập nhật hạn';
+        btn.style.color = '';
+      }, 2000);
+    });
+}
+// ──────────────────────────────────────────────────────────────────────────────
 
 // Hook vào processSheetRows để bắt đầu đếm sau mỗi lần load thành công
 const _origProcessSheetRows = processSheetRows;
