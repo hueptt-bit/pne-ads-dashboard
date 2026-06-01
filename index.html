@@ -140,7 +140,7 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
     <div id="sync-status" style="font-size:11px;color:#6b6a65"></div>
     <div style="display:flex;align-items:center;gap:8px">
       <label style="font-size:11px;color:#6b6a65;white-space:nowrap">Tên bạn:</label>
-      <input class="input-user" id="user-name" type="text" placeholder="Nhập tên..." title="Tên hiển thị khi cập nhật hạn lên Sheet">
+      <input class="input-user" id="user-name" type="text" placeholder="Nhập tên..." title="Tên hiển thị khi cập nhật hạn lên Sheet" onchange="localStorage.setItem('pne_username',this.value)" onblur="localStorage.setItem('pne_username',this.value)">
       <button class="btn-save" id="btn-save" onclick="saveToDB()">💾 Lưu thay đổi</button>
     </div>
   </div>
@@ -212,7 +212,7 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
 
 <script>
 let DB_UPDATED = "2026-05-30";
-const DB_UPDATED_TIME = "16:13";
+const DB_UPDATED_TIME = "16:43";
 const LINKS = [
   {
     "id": "CDVBA_Album_DangKyTDChung_0525_3185",
@@ -3568,7 +3568,9 @@ function _pndDisp(ymd) {
  */
 function doWf(id, newState) {
   var user = ((document.getElementById('user-name')||{}).value||'').trim() || 'Dashboard';
-  _callWfApi(id, newState, '', user);
+  var link = LINKS.find(function(l) { return l.id === id; });
+  var postUrl = link ? (link.url || '') : '';
+  _callWfApi(id, newState, '', user, postUrl);
 }
 
 /**
@@ -3596,13 +3598,15 @@ function doWfDate(id) {
   var date = yyyy+'-'+mm2+'-'+dd;  // YYYY-MM-DD
 
   var user = ((document.getElementById('user-name')||{}).value||'').trim() || 'Dashboard';
-  _callWfApi(id, 'upd_done', date, user);
+  var link2 = LINKS.find(function(l) { return l.id === id; });
+  var postUrl = link2 ? (link2.url || '') : '';
+  _callWfApi(id, 'upd_done', date, user, postUrl);
 }
 
 /**
  * Gọi GAS set_workflow, cập nhật LINKS local, rerender row.
  */
-function _callWfApi(id, newState, note, user) {
+function _callWfApi(id, newState, note, user, postUrl) {
   // Disable tất cả nút trong row
   var rowEl = document.querySelector('tr[data-lid="' + id + '"]');
   var btns  = rowEl ? rowEl.querySelectorAll('.btn-wf') : [];
@@ -3614,6 +3618,7 @@ function _callWfApi(id, newState, note, user) {
     + '&state=' + encodeURIComponent(newState)
     + '&user='  + encodeURIComponent(user)
     + (note ? '&note=' + encodeURIComponent(note) : '')
+    + (postUrl ? '&url=' + encodeURIComponent(postUrl) : '')
     + '&t='     + Date.now();
 
   fetch(url, { credentials: 'omit', mode: 'cors' })
@@ -3656,6 +3661,12 @@ function _callWfApi(id, newState, note, user) {
     });
 }
 // ──────────────────────────────────────────────────────────────────────────────
+
+// Khôi phục tên người dùng từ localStorage
+(function() {
+  var saved = localStorage.getItem('pne_username');
+  if (saved) { var el = document.getElementById('user-name'); if (el) el.value = saved; }
+})();
 
 // Hook vào processSheetRows để bắt đầu đếm sau mỗi lần load thành công
 const _origProcessSheetRows = processSheetRows;
