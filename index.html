@@ -140,7 +140,7 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
     <div id="sync-status" style="font-size:11px;color:#6b6a65"></div>
     <div style="display:flex;align-items:center;gap:8px">
       <label style="font-size:11px;color:#6b6a65;white-space:nowrap">Tên bạn:</label>
-      <input class="input-user" id="user-name" type="text" placeholder="Nhập tên..." title="Tên hiển thị khi cập nhật hạn lên Sheet" onchange="localStorage.setItem('pne_username',this.value)" onblur="localStorage.setItem('pne_username',this.value)">
+      <input class="input-user" id="user-name" type="text" placeholder="Nhập tên..." title="Tên hiển thị khi gửi thông báo Telegram" oninput="localStorage.setItem('pne_username',this.value)" onchange="localStorage.setItem('pne_username',this.value)">
       <button class="btn-save" id="btn-save" onclick="saveToDB()">💾 Lưu thay đổi</button>
     </div>
   </div>
@@ -3566,8 +3566,17 @@ function _pndDisp(ymd) {
  * @param {string} id       - Content ID
  * @param {string} newState - 'gro_requested' | 'gro_done' | 'completed' | ''
  */
+function _getUser() {
+  var el = document.getElementById('user-name');
+  var v  = el ? el.value.trim() : '';
+  if (!v) v = localStorage.getItem('pne_username') || '';
+  if (v && el && !el.value) el.value = v;  // điền lại input nếu bị trống
+  if (v) localStorage.setItem('pne_username', v);  // luôn đồng bộ lại
+  return v || 'Dashboard';
+}
+
 function doWf(id, newState) {
-  var user = ((document.getElementById('user-name')||{}).value||'').trim() || 'Dashboard';
+  var user = _getUser();
   var link = LINKS.find(function(l) { return l.id === id; });
   var postUrl = link ? (link.url || '') : '';
 
@@ -3617,7 +3626,7 @@ function doWfDate(id) {
   var dd=m[1].padStart(2,'0'), mm2=m[2].padStart(2,'0'), yyyy=m[3];
   var date = yyyy+'-'+mm2+'-'+dd;  // YYYY-MM-DD
 
-  var user = ((document.getElementById('user-name')||{}).value||'').trim() || 'Dashboard';
+  var user = _getUser();
   var link2 = LINKS.find(function(l) { return l.id === id; });
   var postUrl = link2 ? (link2.url || '') : '';
   _callWfApi(id, 'upd_done', date, user, postUrl);
