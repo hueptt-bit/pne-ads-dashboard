@@ -212,7 +212,7 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
 
 <script>
 let DB_UPDATED = "2026-05-30";
-const DB_UPDATED_TIME = "15:12";
+const DB_UPDATED_TIME = "15:42";
 const LINKS = [
   {
     "id": "CDVBA_Album_DangKyTDChung_0525_3185",
@@ -3204,7 +3204,7 @@ function rowHtml(l) {
   }
   return `<tr data-lid="${l.id}">
     <td><span class="badge ${pb}">${progLabel}</span></td>
-    <td title="${l.section}">${l.section}</td>
+    <td title="${l.section}" style="white-space:normal;word-break:break-all;max-width:180px">${l.section}</td>
     <td>${chCell}</td>
     <td style="font-size:11px">${dateStr}</td>
     <td style="text-align:right">${typeof dt==='string'&&dt.startsWith('<')?dt:`<span class="days always">${dt}</span>`}</td>
