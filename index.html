@@ -113,9 +113,17 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
 .btn-save { padding:4px 12px; border-radius:6px; border:1px solid #d0cfc8; background:#fff; font-size:11px; font-weight:600; color:#1d4ed8; cursor:pointer; transition:all .12s; white-space:nowrap; }
 .btn-save:hover:not(.saving) { background:#eff6ff; border-color:#93c5fd; }
 .btn-save.saving { color:#6b7280; cursor:default; }
-.btn-edit { padding:3px 10px; border-radius:5px; border:1px solid #93c5fd; background:#eff6ff; color:#1d4ed8; font-size:11px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .12s; }
-.btn-edit:hover:not(:disabled) { background:#dbeafe; }
-.btn-edit:disabled { opacity:.5; cursor:default; }
+.wf-cell  { display:flex; flex-direction:column; gap:3px; }
+.wf-tag   { font-size:10px; color:#6b6a65; font-style:italic; white-space:nowrap; }
+.btn-wf   { padding:3px 8px; border-radius:5px; border:1px solid; font-size:10px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .12s; }
+.btn-wf:hover:not(:disabled) { opacity:.85; }
+.btn-wf:disabled { opacity:.45; cursor:default; }
+.btn-wf-1 { background:#fff7ed; color:#c2410c; border-color:#fed7aa; }  /* yêu cầu gỡ - cam */
+.btn-wf-2 { background:#f0fdf4; color:#166534; border-color:#86efac; }  /* đã gỡ xong - xanh lá */
+.btn-wf-3 { background:#eff6ff; color:#1d4ed8; border-color:#93c5fd; }  /* đã cập nhật - xanh dương */
+.btn-wf-4 { background:#f5f3ff; color:#6d28d9; border-color:#c4b5fd; }  /* đã set ads - tím */
+.btn-wf-r { background:#f8fafc; color:#64748b; border-color:#e2e8f0; font-size:9px; }  /* reset */
+.wf-done  { font-size:10px; color:#166534; font-weight:600; }
 .input-user { width:90px; padding:4px 8px; border-radius:6px; border:1px solid #d0cfc8; background:#fff; font-size:12px; color:#1a1a18; outline:none; }
 .input-user:focus { border-color:#93c5fd; }
 </style>
@@ -194,7 +202,7 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
       <th style="width:90px">Phụ trách</th>
       <th>Link</th>
       <th style="width:120px">Ghi chú</th>
-      <th style="width:90px">Hành động</th>
+      <th style="width:200px">Hành động</th>
     </tr></thead>
     <tbody id="tb"></tbody>
   </table>
@@ -3169,15 +3177,30 @@ function rowHtml(l) {
     else if (l.needs_renewal) renewBtn=`<span class="btn-renewal is-renewal">↻ Gia hạn</span>`;
     else               renewBtn=`<span class="btn-renewal no-renewal">⏹ Ngừng</span>`;
   }
-  // Hành động: chỉ hiện với link có ngày hết hạn (needs_renewal) và đang active
+  // ── Cột Hành động: workflow 4 bước (chỉ với link needs_renewal + active) ──
   const safeId = l.id.replace(/'/g, "\\'");
   let actionCell = '<td></td>';
   if (l.needs_renewal && l.active) {
-    const defDate = l.expiry_date || '';
-    actionCell = `<td><div class="action-cell">
-      <input type="date" class="input-date" value="${defDate}" title="Chọn ngày hết hạn mới">
-      <button class="btn-upd" onclick="updateExpiry('${safeId}',this)">↻ Cập nhật hạn</button>
-    </div></td>`;
+    const ws  = l.workflow_state || '';
+    const pnd = l.pending_new_date || '';   // hạn mới đã nhập ở bước 3, chờ B xác nhận
+    let inner = '';
+    if (!ws) {
+      inner = `<button class="btn-wf btn-wf-1" onclick="doWf('${safeId}','gro_requested')">🗑 Yêu cầu gỡ ads</button>`;
+    } else if (ws === 'gro_requested') {
+      inner = `<span class="wf-tag">⏳ Chờ gỡ ads</span>`
+            + `<button class="btn-wf btn-wf-2" onclick="doWf('${safeId}','gro_done')">✅ Đã gỡ xong</button>`;
+    } else if (ws === 'gro_done') {
+      inner = `<span class="wf-tag">⏳ Chờ cập nhật nội dung</span>`
+            + `<button class="btn-wf btn-wf-3" onclick="doWfDate('${safeId}')">✅ Đã cập nhật + nhập hạn mới</button>`;
+    } else if (ws === 'upd_done') {
+      const pDisp = pnd ? _pndDisp(pnd) : '?';
+      inner = `<span class="wf-tag">⏳ Chờ set ads — hạn: ${pDisp}</span>`
+            + `<button class="btn-wf btn-wf-4" onclick="doWf('${safeId}','completed')">✅ Đã set ads</button>`;
+    } else if (ws === 'completed') {
+      inner = `<span class="wf-done">✅ Hoàn thành</span>`
+            + `<button class="btn-wf btn-wf-r" onclick="doWf('${safeId}','')">↺ Reset</button>`;
+    }
+    actionCell = `<td><div class="wf-cell">${inner}</div></td>`;
   }
   return `<tr data-lid="${l.id}">
     <td><span class="badge ${pb}">${progLabel}</span></td>
@@ -3252,7 +3275,9 @@ function render() {
   const tb = document.getElementById('tb');
   if (!rows.length) { tb.innerHTML='<tr><td colspan="11" class="empty">Không có link phù hợp</td></tr>'; return; }
 
+  const _sy = window.scrollY;
   tb.innerHTML = rows.map(rowHtml).join('');
+  window.scrollTo(0, _sy);
 }
 
 // Event delegation — bền hơn, không bị mất khi DOM thay đổi
@@ -3527,70 +3552,101 @@ function updateTabCounts() {
   if (footerNote) footerNote.textContent = 'Double-click để mở · Cập nhật bởi Claude khi thêm link mới · ' + LINKS.length + ' link đang theo dõi';
 }
 
-// ─── CẬP NHẬT HẠN LÊN GOOGLE SHEET ────────────────────────────────────────────
+// ─── WORKFLOW 4 BƯỚC ──────────────────────────────────────────────────────────
+
+/** Format YYYY-MM-DD → DD/MM/YYYY để hiển thị */
+function _pndDisp(ymd) {
+  if (!ymd) return '?';
+  var p = ymd.split('-');
+  return p.length === 3 ? p[2]+'/'+p[1]+'/'+p[0] : ymd;
+}
+
 /**
- * Gọi khi bấm "Cập nhật hạn" trên 1 row.
- * @param {string} id        - Content ID
- * @param {HTMLElement} btn  - Nút bấm (để cập nhật trạng thái)
+ * Bước 1, 2, 4 (và reset): bấm nút → gọi GAS set_workflow.
+ * @param {string} id       - Content ID
+ * @param {string} newState - 'gro_requested' | 'gro_done' | 'completed' | ''
  */
-function updateExpiry(id, btn) {
-  const input = btn.previousElementSibling;
-  const date  = input ? input.value : '';  // YYYY-MM-DD
-  if (!date) { alert('Vui lòng chọn ngày hết hạn mới.'); return; }
+function doWf(id, newState) {
+  var user = ((document.getElementById('user-name')||{}).value||'').trim() || 'Dashboard';
+  _callWfApi(id, newState, '', user);
+}
 
-  const user = (document.getElementById('user-name').value || '').trim() || 'Dashboard';
+/**
+ * Bước 3: "Đã cập nhật nội dung" — prompt nhập hạn mới → gọi GAS set_workflow state=upd_done.
+ * @param {string} id - Content ID
+ */
+function doWfDate(id) {
+  var link    = LINKS.find(function(l) { return l.id === id; });
+  var curDisp = link && link.expiry_date ? _pndDisp(link.expiry_date) : '';
 
-  btn.disabled    = true;
-  btn.textContent = '⟳ Đang lưu...';
+  var input = window.prompt(
+    '📝 Xác nhận đã cập nhật nội dung cho:\n' + id
+    + (curDisp ? '\n\nHạn hiện tại: ' + curDisp : '')
+    + '\n\nNhập ngày hết hạn mới cho ads (DD/MM/YYYY):',
+    curDisp
+  );
+  if (input === null) return;
+  input = input.trim();
+  if (!input) { alert('Vui lòng nhập ngày hết hạn mới.'); return; }
 
-  const url = SHEET_API
-    + '?action=set_expiry'
-    + '&id='   + encodeURIComponent(id)
-    + '&date=' + encodeURIComponent(date)
-    + '&user=' + encodeURIComponent(user)
-    + '&t='    + Date.now();
+  var m = input.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!m) { alert('Định dạng không đúng.\nNhập theo dạng DD/MM/YYYY — ví dụ: 31/08/2026'); return; }
+
+  var dd=m[1].padStart(2,'0'), mm2=m[2].padStart(2,'0'), yyyy=m[3];
+  var date = yyyy+'-'+mm2+'-'+dd;  // YYYY-MM-DD
+
+  var user = ((document.getElementById('user-name')||{}).value||'').trim() || 'Dashboard';
+  _callWfApi(id, 'upd_done', date, user);
+}
+
+/**
+ * Gọi GAS set_workflow, cập nhật LINKS local, rerender row.
+ */
+function _callWfApi(id, newState, note, user) {
+  // Disable tất cả nút trong row
+  var rowEl = document.querySelector('tr[data-lid="' + id + '"]');
+  var btns  = rowEl ? rowEl.querySelectorAll('.btn-wf') : [];
+  btns.forEach(function(b) { b.disabled = true; b.textContent = '⟳'; });
+
+  var url = SHEET_API
+    + '?action=set_workflow'
+    + '&id='    + encodeURIComponent(id)
+    + '&state=' + encodeURIComponent(newState)
+    + '&user='  + encodeURIComponent(user)
+    + (note ? '&note=' + encodeURIComponent(note) : '')
+    + '&t='     + Date.now();
 
   fetch(url, { credentials: 'omit', mode: 'cors' })
-    .then(function(r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    })
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(function(data) {
       if (data.ok) {
-        btn.textContent      = '✓ Đã lưu!';
-        btn.style.background = '#dcfce7';
-        btn.style.color      = '#166534';
-        btn.style.borderColor= '#86efac';
-        // Cập nhật LINKS trong bộ nhớ
-        const link = LINKS.find(function(l) { return l.id === id; });
-        if (link) { link.expiry_date = date; link.needs_renewal = true; }
-        setTimeout(function() {
-          btn.disabled = false;
-          btn.textContent = '↻ Cập nhật hạn';
-          btn.style.background = '';
-          btn.style.color = '';
-          btn.style.borderColor = '';
-        }, 3000);
+        // Cập nhật LINKS local
+        var link = LINKS.find(function(l) { return l.id === id; });
+        if (link) {
+          link.workflow_state = newState;
+          if (note) link.pending_new_date = note;
+          // Bước 4 hoàn thành: cập nhật expiry_date hiển thị
+          if (newState === 'completed' && link.pending_new_date) {
+            link.expiry_date      = link.pending_new_date;
+            link.workflow_state   = '';
+            link.pending_new_date = '';
+          }
+          // Rerender đúng row đó (không rebuild toàn bảng)
+          if (rowEl) {
+            var tmp = document.createElement('tbody');
+            tmp.innerHTML = rowHtml(link);
+            rowEl.replaceWith(tmp.firstElementChild);
+          }
+        }
       } else {
-        btn.textContent = '✗ Lỗi';
-        btn.style.color = '#b91c1c';
-        alert('Lỗi cập nhật: ' + (data.error || 'Không xác định'));
-        setTimeout(function() {
-          btn.disabled = false;
-          btn.textContent = '↻ Cập nhật hạn';
-          btn.style.color = '';
-        }, 2000);
+        // Khôi phục nút
+        btns.forEach(function(b) { b.disabled = false; });
+        alert('Lỗi: ' + (data.error || 'Không xác định'));
       }
     })
     .catch(function(err) {
-      btn.textContent = '✗ Lỗi mạng';
-      btn.style.color = '#b91c1c';
+      btns.forEach(function(b) { b.disabled = false; });
       alert('Lỗi kết nối: ' + err.message);
-      setTimeout(function() {
-        btn.disabled = false;
-        btn.textContent = '↻ Cập nhật hạn';
-        btn.style.color = '';
-      }, 2000);
     });
 }
 // ──────────────────────────────────────────────────────────────────────────────
