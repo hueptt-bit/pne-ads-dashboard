@@ -140,7 +140,8 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
     <div id="sync-status" style="font-size:11px;color:#6b6a65"></div>
     <div style="display:flex;align-items:center;gap:8px">
       <label style="font-size:11px;color:#6b6a65;white-space:nowrap">Tên bạn:</label>
-      <input class="input-user" id="user-name" type="text" placeholder="Nhập tên..." title="Tên hiển thị khi gửi thông báo Telegram" oninput="localStorage.setItem('pne_username',this.value)" onchange="localStorage.setItem('pne_username',this.value)">
+      <input class="input-user" id="user-name" type="text" placeholder="Nhập tên..." title="Tên hiển thị khi gửi thông báo Telegram" onkeydown="if(event.key==='Enter')saveUserName()" oninput="localStorage.setItem('pne_username',this.value)">
+      <button id="btn-save-name" onclick="saveUserName()" style="padding:4px 10px;border-radius:6px;border:1px solid #93c5fd;background:#eff6ff;color:#1d4ed8;font-size:12px;cursor:pointer;white-space:nowrap">Lưu tên</button>
       <button class="btn-save" id="btn-save" onclick="saveToDB()">💾 Lưu thay đổi</button>
     </div>
   </div>
@@ -3566,6 +3567,27 @@ function _pndDisp(ymd) {
  * @param {string} id       - Content ID
  * @param {string} newState - 'gro_requested' | 'gro_done' | 'completed' | ''
  */
+function saveUserName() {
+  var el  = document.getElementById('user-name');
+  var btn = document.getElementById('btn-save-name');
+  var v   = el ? el.value.trim() : '';
+  if (!v) { alert('Vui lòng nhập tên trước khi lưu.'); return; }
+  localStorage.setItem('pne_username', v);
+  if (btn) {
+    var orig = btn.textContent;
+    btn.textContent = '✓ Đã lưu';
+    btn.style.background = '#dcfce7';
+    btn.style.borderColor = '#86efac';
+    btn.style.color = '#166534';
+    setTimeout(function() {
+      btn.textContent = orig;
+      btn.style.background = '#eff6ff';
+      btn.style.borderColor = '#93c5fd';
+      btn.style.color = '#1d4ed8';
+    }, 2000);
+  }
+}
+
 function _getUser() {
   var el = document.getElementById('user-name');
   var v  = el ? el.value.trim() : '';
