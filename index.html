@@ -3619,6 +3619,12 @@ function _callWfApi(id, newState, note, user) {
   fetch(url, { credentials: 'omit', mode: 'cors' })
     .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(function(data) {
+      // Nếu GAS trả về mảng (chưa redeploy), data.ok sẽ undefined
+      if (Array.isArray(data)) {
+        btns.forEach(function(b) { b.disabled = false; });
+        alert('Lỗi: GAS chưa được redeploy với code mới. Vào script.google.com → Deploy → Manage deployments → chọn New version.');
+        return;
+      }
       if (data.ok) {
         // Cập nhật LINKS local
         var link = LINKS.find(function(l) { return l.id === id; });
@@ -3641,7 +3647,7 @@ function _callWfApi(id, newState, note, user) {
       } else {
         // Khôi phục nút
         btns.forEach(function(b) { b.disabled = false; });
-        alert('Lỗi: ' + (data.error || 'Không xác định'));
+        alert('Lỗi: ' + (data.error || 'Không xác định') + '\n\nRaw: ' + JSON.stringify(data).substring(0, 200));
       }
     })
     .catch(function(err) {
