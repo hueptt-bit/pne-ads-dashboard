@@ -1,0 +1,3668 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ads Link Tracker — PNE</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, Arial, sans-serif; font-size: 14px; background: #f5f4f1; color: #1a1a18; }
+.top-bar { background: #fff; border-bottom: 1px solid #e0dfd8; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+.top-bar h1 { font-size: 16px; font-weight: 600; }
+.top-bar .meta { font-size: 12px; color: #6b6a65; }
+.content { padding: 20px 24px; }
+
+.program-tabs { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
+.ptab { padding: 8px 18px; border-radius: 10px; border: 1px solid #d0cfc8; background: #fff; cursor: pointer; font-size: 13px; font-weight: 500; color: #5f5e5a; display: flex; align-items: center; gap: 7px; transition: all .12s; }
+.ptab .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.ptab:hover:not(.active) { background: #f0efe8; }
+.ptab.active { color: #fff; border-color: transparent; }
+.ptab[data-p="all"]              .dot { background: #888; }
+.ptab[data-p="Du học nghề Đức"]  .dot { background: #1d4ed8; }
+.ptab[data-p="Du học Đức"]       .dot { background: #0284c7; }
+.ptab[data-p="CDVBA"]            .dot { background: #7c3aed; }
+.ptab[data-p="Tiếng"]            .dot { background: #0f766e; }
+.ptab[data-p="Kỳ thi OSD"]       .dot { background: #d97706; }
+.ptab[data-p="Du học Hàn Quốc"]  .dot { background: #dc2626; }
+.ptab[data-p="Khác"]             .dot { background: #64748b; }
+.ptab[data-p="all"].active             { background: #111; }
+.ptab[data-p="Du học nghề Đức"].active { background: #1d4ed8; }
+.ptab[data-p="Du học Đức"].active      { background: #0284c7; }
+.ptab[data-p="CDVBA"].active           { background: #7c3aed; }
+.ptab[data-p="Tiếng"].active           { background: #0f766e; }
+.ptab[data-p="Kỳ thi OSD"].active      { background: #d97706; }
+.ptab[data-p="Du học Hàn Quốc"].active { background: #dc2626; }
+.ptab[data-p="Khác"].active            { background: #64748b; }
+.ptab.active .dot { background: rgba(255,255,255,.55); }
+.ptab .cnt { font-size: 11px; background: rgba(0,0,0,.08); border-radius: 4px; padding: 1px 6px; }
+.ptab.active .cnt { background: rgba(255,255,255,.2); }
+
+.cards { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 18px; }
+.card { background: #fff; border: 1px solid #e0dfd8; border-radius: 10px; padding: 13px 16px; }
+.card-label { font-size: 10px; color: #6b6a65; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+.card-value { font-size: 26px; font-weight: 600; }
+.card.red   .card-value { color: #b91c1c; }
+.card.amber .card-value { color: #92400e; }
+.card.green .card-value { color: #166534; }
+.card.blue  .card-value { color: #1d4ed8; }
+
+.filters { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+.tab-group { display: flex; gap: 3px; }
+.tab { padding: 5px 12px; border-radius: 7px; border: 1px solid #d0cfc8; background: #fff; cursor: pointer; font-size: 12px; color: #5f5e5a; }
+.tab.active { background: #111; color: #fff; border-color: #111; }
+.tab:hover:not(.active) { background: #f0efe8; }
+select, input { padding: 5px 10px; border-radius: 7px; border: 1px solid #d0cfc8; background: #fff; font-size: 12px; color: #1a1a18; outline: none; }
+input { width: 170px; }
+input:focus { border-color: #888; }
+.count { font-size: 12px; color: #6b6a65; margin-left: auto; }
+
+table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; border: 1px solid #e0dfd8; overflow: hidden; }
+thead { background: #f5f4f1; }
+th { padding: 9px 12px; text-align: left; font-size: 11px; font-weight: 600; color: #6b6a65; border-bottom: 1px solid #e0dfd8; white-space: nowrap; }
+td { padding: 8px 12px; border-bottom: 1px solid #f4f3f0; font-size: 12px; vertical-align: middle; max-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #faf9f7; }
+
+.badge { display: inline-block; padding: 2px 8px; border-radius: 5px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.b-het      { background: #fee2e2; color: #991b1b; }
+.b-sap      { background: #fef3c7; color: #92400e; }
+.b-gia-han  { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; }
+.b-ok       { background: #dcfce7; color: #166534; }
+.b-always   { background: #dbeafe; color: #1e40af; }
+.b-off      { background: #f3f4f6; color: #6b7280; }
+.b-da-ngung { background: #f1f5f9; color: #64748b; }
+.type-tag   { display:inline-block; font-size:9px; font-weight:600; padding:1px 5px; border-radius:3px; margin-top:2px; white-space:nowrap; }
+.type-ngung { background:#f1f5f9; color:#94a3b8; border:1px solid #e2e8f0; }
+.type-giahan{ background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; }
+.toggle-renewal { cursor:pointer; user-select:none; }
+.toggle-renewal:hover { opacity:.75; }
+.btn-renewal { display:inline-flex; align-items:center; gap:3px; padding:3px 8px; border-radius:5px; border:1px solid; font-size:10px; font-weight:600; cursor:default; white-space:nowrap; background:#fff; user-select:none; }
+.btn-renewal:hover { opacity:1; }
+.btn-renewal.is-renewal  { border-color:#fdba74; color:#c2410c; background:#fff7ed; }
+.btn-renewal.no-renewal  { border-color:#e2e8f0; color:#94a3b8; background:#f8fafc; }
+.btn-renewal.is-always   { border-color:#bfdbfe; color:#1d4ed8; background:#eff6ff; }
+.b-dhd    { background: #dbeafe; color: #1e40af; }
+.b-dhdd   { background: #e0f2fe; color: #0369a1; }
+.b-ao     { background: #ede9fe; color: #6d28d9; }
+.b-tieng  { background: #ccfbf1; color: #0f766e; }
+.b-osd    { background: #fef3c7; color: #92400e; }
+.b-dhk    { background: #fee2e2; color: #991b1b; }
+.b-khac   { background: #f1f5f9; color: #475569; }
+/* Per-language badge colors */
+.b-lang-duc   { background: #dbeafe; color: #1d4ed8; }
+.b-lang-phap  { background: #ede9fe; color: #6d28d9; }
+.b-lang-han   { background: #fce7f3; color: #9d174d; }
+.b-lang-thai  { background: #fef3c7; color: #92400e; }
+.b-lang-tbn   { background: #ffedd5; color: #9a3412; }
+.b-lang-trung { background: #fee2e2; color: #991b1b; }
+.b-lang-nhat  { background: #dcfce7; color: #166534; }
+.b-lang-other { background: #f1f5f9; color: #475569; }
+.b-page   { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; font-size: 10px; }
+
+a { color: #1d4ed8; text-decoration: none; font-size: 11px; }
+a:hover { text-decoration: underline; }
+.days { font-weight: 600; text-align: right; white-space: nowrap; }
+.days.neg    { color: #b91c1c; }
+.days.urg    { color: #92400e; }
+.days.warn   { color: #9a3412; }
+.days.fine   { color: #166534; }
+.days.always { color: #1d4ed8; }
+.empty { text-align: center; padding: 40px; color: #6b6a65; font-size: 13px; }
+.note-cell { font-size: 11px; color: #9f9e99; font-style: italic; }
+footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px solid #e0dfd8; margin-top: 4px; }
+.btn-save { padding:4px 12px; border-radius:6px; border:1px solid #d0cfc8; background:#fff; font-size:11px; font-weight:600; color:#1d4ed8; cursor:pointer; transition:all .12s; white-space:nowrap; }
+.btn-save:hover:not(.saving) { background:#eff6ff; border-color:#93c5fd; }
+.btn-save.saving { color:#6b7280; cursor:default; }
+.wf-cell  { display:flex; flex-direction:column; gap:3px; }
+.wf-tag   { font-size:10px; color:#6b6a65; font-style:italic; white-space:nowrap; }
+.btn-wf   { padding:3px 8px; border-radius:5px; border:1px solid; font-size:10px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .12s; }
+.btn-wf:hover:not(:disabled) { opacity:.85; }
+.btn-wf:disabled { opacity:.45; cursor:default; }
+.btn-wf-1 { background:#fff7ed; color:#c2410c; border-color:#fed7aa; }  /* yêu cầu gỡ - cam */
+.btn-wf-2 { background:#f0fdf4; color:#166534; border-color:#86efac; }  /* đã gỡ xong - xanh lá */
+.btn-wf-3 { background:#eff6ff; color:#1d4ed8; border-color:#93c5fd; }  /* đã cập nhật - xanh dương */
+.btn-wf-4 { background:#f5f3ff; color:#6d28d9; border-color:#c4b5fd; }  /* đã set ads - tím */
+.btn-wf-r { background:#f8fafc; color:#64748b; border-color:#e2e8f0; font-size:9px; }  /* reset */
+.wf-done  { font-size:10px; color:#166534; font-weight:600; }
+.input-user { width:90px; padding:4px 8px; border-radius:6px; border:1px solid #d0cfc8; background:#fff; font-size:12px; color:#1a1a18; outline:none; }
+.input-user:focus { border-color:#93c5fd; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div>
+    <h1>Ads Link Tracker — PNE</h1>
+    <div class="meta">Hôm nay: <span id="today-str"></span></div>
+  </div>
+  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+    <div class="meta" id="db-meta"></div>
+    <div id="sync-status" style="font-size:11px;color:#6b6a65"></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <label style="font-size:11px;color:#6b6a65;white-space:nowrap">Tên bạn:</label>
+      <input class="input-user" id="user-name" type="text" placeholder="Nhập tên..." title="Tên hiển thị khi cập nhật hạn lên Sheet">
+      <button class="btn-save" id="btn-save" onclick="saveToDB()">💾 Lưu thay đổi</button>
+    </div>
+  </div>
+</div>
+
+<div class="content">
+
+  <div class="program-tabs" id="prog-tabs">
+    <button class="ptab active" data-p="all"><span class="dot"></span>Tất cả <span class="cnt" id="cnt-all"></span></button>
+    <button class="ptab" data-p="Du học nghề Đức"><span class="dot"></span>Du học nghề Đức <span class="cnt" id="cnt-dhd"></span></button>
+    <button class="ptab" data-p="CDVBA"><span class="dot"></span>CDVBA <span class="cnt" id="cnt-ao"></span></button>
+    <button class="ptab" data-p="Du học Đức"><span class="dot"></span>Du học Đức <span class="cnt" id="cnt-dhdd"></span></button>
+    <button class="ptab" data-p="Du học Hàn Quốc"><span class="dot"></span>Du học Hàn <span class="cnt" id="cnt-dhk"></span></button>
+    <button class="ptab" data-p="Tiếng"><span class="dot"></span>Tiếng <span class="cnt" id="cnt-tieng"></span></button>
+    <button class="ptab" data-p="Kỳ thi OSD"><span class="dot"></span>Kỳ thi OSD <span class="cnt" id="cnt-osd"></span></button>
+    <button class="ptab" data-p="Khác"><span class="dot"></span>Khác <span class="cnt" id="cnt-khac"></span></button>
+  </div>
+
+  <div class="cards">
+    <div class="card red">  <div class="card-label">Cần gia hạn (quá hạn)</div><div class="card-value" id="c-het">0</div></div>
+    <div class="card amber"> <div class="card-label">Sắp hết — cần gia hạn</div><div class="card-value" id="c-sap">0</div></div>
+    <div class="card green"> <div class="card-label">Còn hạn</div>            <div class="card-value" id="c-ok">0</div></div>
+    <div class="card blue">  <div class="card-label">Luôn chạy</div>          <div class="card-value" id="c-always">0</div></div>
+  </div>
+
+  <div class="filters">
+    <div class="tab-group">
+      <button class="tab active" data-s="all">Tất cả</button>
+      <button class="tab" data-s="LUÔN CHẠY">Luôn chạy</button>
+      <button class="tab" data-s="SẮP HẾT">Sắp hết</button>
+      <button class="tab" data-s="GIA HẠN">Cần gia hạn</button>
+      <button class="tab" data-s="HẾT HẠN">Hết hạn</button>
+      <button class="tab" data-s="OK">Còn hạn</button>
+      <button class="tab" data-s="ĐÃ NGỪNG">Đã ngừng</button>
+    </div>
+    <select id="lang-sel">
+      <option value="all">Tất cả ngôn ngữ</option>
+      <option>Đức</option><option>Pháp</option><option>Hàn</option>
+      <option>Thái</option><option>TBN</option><option>Trung</option><option>Nhật</option>
+      <option>Ý</option><option>Nga</option>
+    </select>
+    <select id="person-sel">
+      <option value="all">Tất cả phụ trách</option>
+      <option>Ngọc</option><option>Dương</option><option>Hà</option><option>Tiên</option>
+    </select>
+    <input id="q" type="text" placeholder="Tìm link, mục...">
+    <span class="count" id="cnt-badge"></span>
+  </div>
+
+  <table>
+    <thead><tr>
+      <th style="width:120px">Chương trình</th>
+      <th style="width:150px">Mục</th>
+      <th style="width:75px">Kênh / Page</th>
+      <th style="width:88px">Hết hạn</th>
+      <th style="width:80px;text-align:right">Còn lại</th>
+      <th style="width:95px">Trạng thái</th>
+      <th style="width:90px">Loại</th>
+      <th style="width:90px">Phụ trách</th>
+      <th>Link</th>
+      <th style="width:120px">Ghi chú</th>
+      <th style="width:200px">Hành động</th>
+    </tr></thead>
+    <tbody id="tb"></tbody>
+  </table>
+
+</div>
+<footer id="footer-note"></footer>
+
+<script>
+let DB_UPDATED = "2026-05-30";
+const DB_UPDATED_TIME = "15:12";
+const LINKS = [
+  {
+    "id": "CDVBA_Album_DangKyTDChung_0525_3185",
+    "program": "CDVBA",
+    "section": "CDVBA_Album_DangKyTDChung_0525_3185",
+    "channel": "Album",
+    "page": "DieuDuongAo",
+    "url": "https://www.facebook.com/DieuDuongAo/posts/122249757314073185",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "CDVBA_Photo_BVVorarlberg_0824_3185",
+    "program": "CDVBA",
+    "section": "CDVBA_Photo_BVVorarlberg_0824_3185",
+    "channel": "Photo",
+    "page": "DieuDuongAo",
+    "url": "https://www.facebook.com/DieuDuongAo/posts/122186359706073185",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "CDVBA_Photo_TrungCap_0924_3185",
+    "program": "CDVBA",
+    "section": "CDVBA_Photo_TrungCap_0924_3185",
+    "channel": "Photo",
+    "page": "DieuDuongAo",
+    "url": "https://www.facebook.com/DieuDuongAo/posts/122197853138073185",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "CDVBA_Reels_CoHoiDieuDuong_0525_3185",
+    "program": "CDVBA",
+    "section": "CDVBA_Reels_CoHoiDieuDuong_0525_3185",
+    "channel": "Reels",
+    "page": "DieuDuongAo",
+    "url": "https://www.facebook.com/DieuDuongAo/posts/122248655840073185",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "DHD_Photo_QuocGiaHangDau_0822_3484",
+    "program": "Du học Đức",
+    "section": "DHD_Photo_QuocGiaHangDau_0822_3484",
+    "channel": "Photo",
+    "page": "duhocducphuongnam",
+    "url": "https://www.facebook.com/duhocducphuongnam/posts/1242538229833484",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "DHHQ_Carousel_TruongTopDau_0126_3500",
+    "program": "Du học Hàn Quốc",
+    "section": "DHHQ_Carousel_TruongTopDau_0126_3500",
+    "channel": "Carousel",
+    "page": "duhochanquoc.edu.vn",
+    "url": "https://www.facebook.com/duhochanquoc.edu.vn/posts/1318252887013500",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "DHHQ_Photo_DieuDuongDHKyungin_1025_7742",
+    "program": "Du học Hàn Quốc",
+    "section": "DHHQ_Photo_DieuDuongDHKyungin_1025_7742",
+    "channel": "Photo",
+    "page": "duhochanquoc.edu.vn",
+    "url": "https://www.facebook.com/duhochanquoc.edu.vn/posts/1226377142867742",
+    "expiry_date": "2026-08-31",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "DHHQ_Photo_TruongTopDau_1124_3533",
+    "program": "Du học Hàn Quốc",
+    "section": "DHHQ_Photo_TruongTopDau_1124_3533",
+    "channel": "Photo",
+    "page": "duhochanquoc.edu.vn",
+    "url": "https://www.facebook.com/duhochanquoc.edu.vn/posts/980119257493533",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "DHHQ_Reels_DieuDuongDHKyungin_0925_7878",
+    "program": "Du học Hàn Quốc",
+    "section": "DHHQ_Reels_DieuDuongDHKyungin_0925_7878",
+    "channel": "Reels",
+    "page": "duhochanquoc.edu.vn",
+    "url": "https://www.facebook.com/duhochanquoc.edu.vn/posts/1220909593414497",
+    "expiry_date": "2026-08-31",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "DHND_Album_AnhThatDHS_0424_3960",
+    "program": "Du học nghề Đức",
+    "section": "DHND_Album_AnhThatDHS_0424_3960",
+    "channel": "Album",
+    "page": "DuHocNgheDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/DuHocNgheDuc.PhuongNamEducation/posts/122127679280233960",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "DHND_Photo_ChuyenTiep_1124_9441",
+    "program": "Du học nghề Đức",
+    "section": "DHND_Photo_ChuyenTiep_1124_9441",
+    "channel": "Photo",
+    "page": "DuHocPhuongNamEducation",
+    "url": "https://www.facebook.com/DuHocPhuongNamEducation/posts/526519243709441",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "DHND_Photo_DieuDuong2026_0126_3960",
+    "program": "Du học nghề Đức",
+    "section": "DHND_Photo_DieuDuong2026_0126_3960",
+    "channel": "Photo",
+    "page": "DuHocNgheDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/DuHocNgheDuc.PhuongNamEducation/posts/122296430960233960",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "DHND_Reels_DaiHoc2005_0124_0622",
+    "program": "Du học nghề Đức",
+    "section": "DHND_Reels_DaiHoc2005_0124_0622",
+    "channel": "Reels",
+    "page": "duhocducphuongnam",
+    "url": "https://www.facebook.com/duhocducphuongnam/posts/682248994100622",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "DHND_Reels_DieuDuong2026_0126_3960",
+    "program": "Du học nghề Đức",
+    "section": "DHND_Reels_DieuDuong2026_0126_3960",
+    "channel": "Reels",
+    "page": "DuHocNgheDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/DuHocNgheDuc.PhuongNamEducation/posts/122296597946233960",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "DHND_Reels_HuongDiTrienVong_0226_3960",
+    "program": "Du học nghề Đức",
+    "section": "DHND_Reels_HuongDiTrienVong_0226_3960",
+    "channel": "Reels",
+    "page": "DuHocNgheDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/DuHocNgheDuc.PhuongNamEducation/posts/122298881282233960",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "DHND_Reels_HuongDiTrienVong_0924_2253",
+    "program": "Du học nghề Đức",
+    "section": "DHND_Reels_HuongDiTrienVong_0924_2253",
+    "channel": "Reels",
+    "page": "DuHocPhuongNamEducation",
+    "url": "https://www.facebook.com/DuHocPhuongNamEducation/posts/481391128222253",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Duc_Album_Chung_NangTrinhCapToc_0925_5171",
+    "program": "Tiếng Đức",
+    "section": "Duc_Album_Chung_NangTrinhCapToc_0925_5171",
+    "channel": "Album",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122246555228075171",
+    "expiry_date": "2026-06-29",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Duc_Album_GoiKhongGioiHan_1024_5171",
+    "program": "Tiếng Đức",
+    "section": "Duc_Album_GoiKhongGioiHan_1024_5171",
+    "channel": "Album",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122185604072075171",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Duc_Album_Offfline_LKG_RucRo_0326_5171",
+    "program": "Tiếng Đức",
+    "section": "Duc_Album_Offfline_LKG_RucRo_0326_5171",
+    "channel": "Album",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122271339458075171",
+    "expiry_date": "2026-05-30",
+    "needs_renewal": true,
+    "active": false,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Duc_Album_Offline_LKG_ThuMoi_1025_5171",
+    "program": "Tiếng Đức",
+    "section": "Duc_Album_Offline_LKG_ThuMoi_1025_5171",
+    "channel": "Album",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122251028114075171",
+    "expiry_date": "2026-12-29",
+    "needs_renewal": true,
+    "active": false,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Duc_Album_Online_ChiuCanh_0326_5171",
+    "program": "Tiếng Đức",
+    "section": "Duc_Album_Online_ChiuCanh_0326_5171",
+    "channel": "Album",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122271357692075171",
+    "expiry_date": "2026-06-29",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Duc_Album_Online_GhiDanh_0326_5171",
+    "program": "Tiếng Đức",
+    "section": "Duc_Album_Online_GhiDanh_0326_5171",
+    "channel": "Album",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122271794426075171",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Duc_Album_Online_LKG_VeSi_0425_5171",
+    "program": "Tiếng Đức",
+    "section": "Duc_Album_Online_LKG_VeSi_0425_5171",
+    "channel": "Album",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122218806662075171",
+    "expiry_date": "2026-12-23",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Duc_Album_Online1Kem1_PhaVoRaoCao_0926_5171",
+    "program": "Tiếng Đức",
+    "section": "Duc_Album_Online1Kem1_PhaVoRaoCao_0926_5171",
+    "channel": "Album",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122246026700075171",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Duc_Photo_Offfline_ChuongMoi_0226_5171",
+    "program": "Tiếng Đức",
+    "section": "Duc_Photo_Offfline_ChuongMoi_0226_5171",
+    "channel": "Photo",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122264848016075171",
+    "expiry_date": "2026-04-14",
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Duc_Photo_Offline_LTB1_GVNuocNgoai_0226_5171",
+    "program": "Tiếng Đức",
+    "section": "Duc_Photo_Offline_LTB1_GVNuocNgoai_0226_5171",
+    "channel": "Photo",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122265628304075171",
+    "expiry_date": "2026-06-01",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Duc_Photo_Offline_LTB1_GVNuocNgoai_0526_5171",
+    "program": "Tiếng Đức",
+    "section": "Duc_Photo_Offline_LTB1_GVNuocNgoai_0526_5171",
+    "channel": "Photo",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122277263954075171",
+    "expiry_date": "2026-06-01",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Duc_Photo_Offline_LTB1_KNNghe_0526_5171",
+    "program": "Tiếng Đức",
+    "section": "Duc_Photo_Offline_LTB1_KNNghe_0526_5171",
+    "channel": "Photo",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122277126506075171",
+    "expiry_date": "2026-06-03",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Duc_Reels_Chung_BanhThanhTuu_0126_5171",
+    "program": "Tiếng Đức",
+    "section": "Duc_Reels_Chung_BanhThanhTuu_0126_5171",
+    "channel": "Reels",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122263996676075171",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Duc_Reels_Chung_ThuyetTrinh_1024_5171",
+    "program": "Tiếng Đức",
+    "section": "Duc_Reels_Chung_ThuyetTrinh_1024_5171",
+    "channel": "Reels",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122186150570075171",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Duc_Reels_Offline_GuGo_0424_5171",
+    "program": "Tiếng Đức",
+    "section": "Duc_Reels_Offline_GuGo_0424_5171",
+    "channel": "Reels",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122149999286075171",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Duc_Reels_Offline_ThuMoi_1125_5171",
+    "program": "Tiếng Đức",
+    "section": "Duc_Reels_Offline_ThuMoi_1125_5171",
+    "channel": "Reels",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122251834586075171",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Duc_Reels_Online1Kem1_BuocQuaRaoCan_1025_5171",
+    "program": "Tiếng Đức",
+    "section": "Duc_Reels_Online1Kem1_BuocQuaRaoCan_1025_5171",
+    "channel": "Reels",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122246705852075171",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "EduCRM_Album_DungThu90Ngay_0922_4682",
+    "program": "EduCRM",
+    "section": "EduCRM_Album_DungThu90Ngay_0922_4682",
+    "channel": "Album",
+    "page": "EduCRM",
+    "url": "https://www.facebook.com/EduCRM/posts/611529060514682",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "EduCRM_Photo_CamNhanChuDN_0922_9359",
+    "program": "EduCRM",
+    "section": "EduCRM_Photo_CamNhanChuDN_0922_9359",
+    "channel": "Photo",
+    "page": "EduCRM",
+    "url": "https://www.facebook.com/EduCRM/posts/612415623759359",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Han_Album_Online_LKG_ChiecDealXin_0625_4733",
+    "program": "Tiếng Hàn",
+    "section": "Han_Album_Online_LKG_ChiecDealXin_0625_4733",
+    "channel": "Album",
+    "page": "hoctienghanphuongnam",
+    "url": "https://www.facebook.com/hoctienghanphuongnam/posts/749112047464733",
+    "expiry_date": "2026-12-23",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Han_Album_Online_LKG_ChotDealVang_0124_1662",
+    "program": "Tiếng Hàn",
+    "section": "Han_Album_Online_LKG_ChotDealVang_0124_1662",
+    "channel": "Album",
+    "page": "hoctienghanphuongnam",
+    "url": "https://www.facebook.com/hoctienghanphuongnam/posts/421942790181662",
+    "expiry_date": "2026-12-23",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Han_Photo_Offline_NongTrai_0625_7475",
+    "program": "Tiếng Hàn",
+    "section": "Han_Photo_Offline_NongTrai_0625_7475",
+    "channel": "Photo",
+    "page": "hoctienghanphuongnam",
+    "url": "https://www.facebook.com/hoctienghanphuongnam/posts/749117960797475",
+    "expiry_date": "2026-12-29",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Han_Photo_Online1Kem1_LoTrinhRieng_0725_5994",
+    "program": "Tiếng Hàn",
+    "section": "Han_Photo_Online1Kem1_LoTrinhRieng_0725_5994",
+    "channel": "Photo",
+    "page": "hoctienghanphuongnam",
+    "url": "https://www.facebook.com/hoctienghanphuongnam/posts/788399433535994",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Han_Reels_Chung_BiKip3D_0126_2331",
+    "program": "Tiếng Hàn",
+    "section": "Han_Reels_Chung_BiKip3D_0126_2331",
+    "channel": "Reels",
+    "page": "hoctienghanphuongnam",
+    "url": "https://www.facebook.com/hoctienghanphuongnam/posts/924669383242331",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Han_Reels_Offline_OntopTiengHan_0126_2694",
+    "program": "Tiếng Hàn",
+    "section": "Han_Reels_Offline_OntopTiengHan_0126_2694",
+    "channel": "Reels",
+    "page": "hoctienghanphuongnam",
+    "url": "https://www.facebook.com/hoctienghanphuongnam/posts/918399087202694",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Han_Reels_Online_UuDaiChuaTungCo_0524_8690",
+    "program": "Tiếng Hàn",
+    "section": "Han_Reels_Online_UuDaiChuaTungCo_0524_8690",
+    "channel": "Reels",
+    "page": "hoctienghanphuongnam",
+    "url": "https://www.facebook.com/hoctienghanphuongnam/posts/484672503908690",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "HDTOSD_Album_ChotSlotT5_0426_6955",
+    "program": "Kỳ thi OSD",
+    "section": "HDTOSD_Album_ChotSlotT5_0426_6955",
+    "channel": "Album",
+    "page": "HoiDongThiOESD.PhuongNamEducation",
+    "url": "https://www.facebook.com/HoiDongThiOESD.PhuongNamEducation/posts/122163654962946955",
+    "expiry_date": "2026-05-21",
+    "needs_renewal": true,
+    "active": false,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "HDTOSD_Album_DungBoLoThoiHanT5_0426_6955",
+    "program": "Kỳ thi OSD",
+    "section": "HDTOSD_Album_DungBoLoThoiHanT5_0426_6955",
+    "channel": "Album",
+    "page": "HoiDongThiOESD.PhuongNamEducation",
+    "url": "https://www.facebook.com/HoiDongThiOESD.PhuongNamEducation/posts/122162982830946955",
+    "expiry_date": "2026-05-21",
+    "needs_renewal": true,
+    "active": false,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "HDTOSD_Reels_KyThiThang5_0426_6955",
+    "program": "Kỳ thi OSD",
+    "section": "HDTOSD_Reels_KyThiThang5_0426_6955",
+    "channel": "Reels",
+    "page": "HoiDongThiOESD.PhuongNamEducation",
+    "url": "https://www.facebook.com/HoiDongThiOESD.PhuongNamEducation/posts/122164801850946955",
+    "expiry_date": "2026-05-21",
+    "needs_renewal": true,
+    "active": false,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Nga_Album_Online1Kem1_1124_7685",
+    "program": "Tiếng Nga",
+    "section": "Nga_Album_Online1Kem1_1124_7685",
+    "channel": "Album",
+    "page": "HocTiengNgaPhuongNam",
+    "url": "https://www.facebook.com/HocTiengNgaPhuongNam/posts/974132011407685",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Nhat_Album_Online1Kem1_DoNiDongGiay_0825_0851",
+    "program": "Tiếng Nhật",
+    "section": "Nhat_Album_Online1Kem1_DoNiDongGiay_0825_0851",
+    "channel": "Album",
+    "page": "HocTiengNhatPhuongNam",
+    "url": "https://www.facebook.com/HocTiengNhatPhuongNam/posts/1207408604760851",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Nhat_Photo_Online1Kem1_MuiTenChanAi_0924_1844",
+    "program": "Tiếng Nhật",
+    "section": "Nhat_Photo_Online1Kem1_MuiTenChanAi_0924_1844",
+    "channel": "Photo",
+    "page": "HocTiengNhatPhuongNam",
+    "url": "https://www.facebook.com/HocTiengNhatPhuongNam/posts/941765367991844",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Nhat_Reels_Online1Kem1_MuiTenChanAi_0924_6884",
+    "program": "Tiếng Nhật",
+    "section": "Nhat_Reels_Online1Kem1_MuiTenChanAi_0924_6884",
+    "channel": "Reels",
+    "page": "HocTiengNhatPhuongNam",
+    "url": "https://www.facebook.com/HocTiengNhatPhuongNam/posts/946314967536884",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "OSD_Album_MoCongDangKyT5_0426_5171",
+    "program": "Kỳ thi OSD",
+    "section": "OSD_Album_MoCongDangKyT5_0426_5171",
+    "channel": "Album",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122273603588075171",
+    "expiry_date": "2026-05-21",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "OSD_Reels_KyThiT5_0426_5171",
+    "program": "Kỳ thi OSD",
+    "section": "OSD_Reels_KyThiT5_0426_5171",
+    "channel": "Reels",
+    "page": "HocTiengDuc.PhuongNamEducation",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122275427588075171",
+    "expiry_date": "2026-05-22",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Phap_Album_Offline_LKG_1MuiTen3Dich_1225_7246",
+    "program": "Tiếng Pháp",
+    "section": "Phap_Album_Offline_LKG_1MuiTen3Dich_1225_7246",
+    "channel": "Album",
+    "page": "hoctiengphapphuongnam",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/1296183715887246",
+    "expiry_date": "2026-06-16",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Phap_Album_Offline_LKG_BonjourThangMoi_0225_3778",
+    "program": "Tiếng Pháp",
+    "section": "Phap_Album_Offline_LKG_BonjourThangMoi_0225_3778",
+    "channel": "Album",
+    "page": "hoctiengphapphuongnam",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/1037185088453778",
+    "expiry_date": "2026-12-29",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Phap_Album_Online_LKG_SongDuLau_0326_0134",
+    "program": "Tiếng Pháp",
+    "section": "Phap_Album_Online_LKG_SongDuLau_0326_0134",
+    "channel": "Album",
+    "page": "hoctiengphapphuongnam",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/1375588161280134",
+    "expiry_date": "2026-06-09",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Phap_Photo_Offline_LKG_LenMaKhoaTiengPhap_0326_0591",
+    "program": "Tiếng Pháp",
+    "section": "Phap_Photo_Offline_LKG_LenMaKhoaTiengPhap_0326_0591",
+    "channel": "Photo",
+    "page": "hoctiengphapphuongnam",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/1374716924700591",
+    "expiry_date": "2026-06-16",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Phap_Photo_Online_GoiBangSDT_0625_6959",
+    "program": "Tiếng Pháp",
+    "section": "Phap_Photo_Online_GoiBangSDT_0625_6959",
+    "channel": "Photo",
+    "page": "hoctiengphapphuongnam",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/1125753269596959",
+    "expiry_date": "2026-05-30",
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Phap_Photo_Online_SongDuLau_0326_2893",
+    "program": "Tiếng Pháp",
+    "section": "Phap_Photo_Online_SongDuLau_0326_2893",
+    "channel": "Photo",
+    "page": "hoctiengphapphuongnam",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/1374727238032893",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Phap_Reels_Offline_VongXoayPhapNgu_0424_1652",
+    "program": "Tiếng Pháp",
+    "section": "Phap_Reels_Offline_VongXoayPhapNgu_0424_1652",
+    "channel": "Reels",
+    "page": "hoctiengphapphuongnam",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/819839703521652",
+    "expiry_date": "2026-05-30",
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Phap_Reels_Online1Kem1_LoTrinhCaNhan_0925_9920",
+    "program": "Tiếng Pháp",
+    "section": "Phap_Reels_Online1Kem1_LoTrinhCaNhan_0925_9920",
+    "channel": "Reels",
+    "page": "hoctiengphapphuongnam",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/1220890316749920",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "TBN_Album_LKGChung_0325_4256",
+    "program": "Tiếng Tây Ban Nha",
+    "section": "TBN_Album_LKGChung_0325_4256",
+    "channel": "Album",
+    "page": "gioitiengtaybannha",
+    "url": "https://www.facebook.com/gioitiengtaybannha/posts/620983250574256",
+    "expiry_date": "2026-12-23",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "TBN_Album_Offline_SanDeal2026_0226_9251",
+    "program": "Tiếng Tây Ban Nha",
+    "section": "TBN_Album_Offline_SanDeal2026_0226_9251",
+    "channel": "Album",
+    "page": "gioitiengtaybannha",
+    "url": "https://www.facebook.com/gioitiengtaybannha/posts/877633274909251",
+    "expiry_date": "2026-06-16",
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "TBN_Photo_Online_BoTuDealHoi_0426_3457",
+    "program": "Tiếng Tây Ban Nha",
+    "section": "TBN_Photo_Online_BoTuDealHoi_0426_3457",
+    "channel": "Photo",
+    "page": "gioitiengtaybannha",
+    "url": "https://www.facebook.com/gioitiengtaybannha/posts/928357876503457",
+    "expiry_date": "2026-04-20",
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "TBN_Reels_Offline_ToaDo357_0724_0172",
+    "program": "Tiếng Tây Ban Nha",
+    "section": "TBN_Reels_Offline_ToaDo357_0724_0172",
+    "channel": "Reels",
+    "page": "gioitiengtaybannha",
+    "url": "https://www.facebook.com/gioitiengtaybannha/posts/461324106540172",
+    "expiry_date": "2026-12-29",
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "TBN_Reels_Online1Kem1_DoNiDongGiay_1025_6409",
+    "program": "Tiếng Tây Ban Nha",
+    "section": "TBN_Reels_Online1Kem1_DoNiDongGiay_1025_6409",
+    "channel": "Reels",
+    "page": "gioitiengtaybannha",
+    "url": "https://www.facebook.com/gioitiengtaybannha/posts/785928370746409",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "TBN_Reels_Online1Kem1_KimChiNam_0724_2357",
+    "program": "Tiếng Tây Ban Nha",
+    "section": "TBN_Reels_Online1Kem1_KimChiNam_0724_2357",
+    "channel": "Reels",
+    "page": "gioitiengtaybannha",
+    "url": "https://www.facebook.com/gioitiengtaybannha/posts/468735589132357",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Thai_Album_Offline_HocThaGa_0124_2352",
+    "program": "Tiếng Thái",
+    "section": "Thai_Album_Offline_HocThaGa_0124_2352",
+    "channel": "Album",
+    "page": "hoctiengthaiphuongnam",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/756535766502352",
+    "expiry_date": "2026-12-29",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Thai_Album_Offline_LKG_MoiDoanMinh_0925_2376",
+    "program": "Tiếng Thái",
+    "section": "Thai_Album_Offline_LKG_MoiDoanMinh_0925_2376",
+    "channel": "Album",
+    "page": "hoctiengthaiphuongnam",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1198668815622376",
+    "expiry_date": "2026-12-29",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Thai_Album_Offline_LKG_ThapChuoi8Tuan_0326_9613",
+    "program": "Tiếng Thái",
+    "section": "Thai_Album_Offline_LKG_ThapChuoi8Tuan_0326_9613",
+    "channel": "Album",
+    "page": "hoctiengthaiphuongnam",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1349829763839613",
+    "expiry_date": "2026-06-20",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Thai_Photo_Offline_DoFullSkill_0326_5810",
+    "program": "Tiếng Thái",
+    "section": "Thai_Photo_Offline_DoFullSkill_0326_5810",
+    "channel": "Photo",
+    "page": "hoctiengthaiphuongnam",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1348967793925810",
+    "expiry_date": "2026-05-18",
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Thai_Photo_Offline_MoiBanDenPNE_0325_4490",
+    "program": "Tiếng Thái",
+    "section": "Thai_Photo_Offline_MoiBanDenPNE_0325_4490",
+    "channel": "Photo",
+    "page": "hoctiengthaiphuongnam",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1052381023584490",
+    "expiry_date": "2026-06-16",
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Thai_Photo_Online_+1MayGioiTiengThai_0325_1047",
+    "program": "Tiếng Thái",
+    "section": "Thai_Photo_Online_+1MayGioiTiengThai_0325_1047",
+    "channel": "Photo",
+    "page": "hoctiengthaiphuongnam",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1052382120251047",
+    "expiry_date": "2026-12-23",
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Thai_Photo_Online_NguoiBanRon_0326_6286",
+    "program": "Tiếng Thái",
+    "section": "Thai_Photo_Online_NguoiBanRon_0326_6286",
+    "channel": "Photo",
+    "page": "hoctiengthaiphuongnam",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1349829700506286",
+    "expiry_date": "2026-05-30",
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Thai_Photo_Online1Kem1_CanDichMucTieu_0925_4837",
+    "program": "Tiếng Thái",
+    "section": "Thai_Photo_Online1Kem1_CanDichMucTieu_0925_4837",
+    "channel": "Photo",
+    "page": "hoctiengthaiphuongnam",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1196110872544837",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Thai_Reels_Online_NongHonThoiTietSG_0625_2028",
+    "program": "Tiếng Thái",
+    "section": "Thai_Reels_Online_NongHonThoiTietSG_0625_2028",
+    "channel": "Reels",
+    "page": "hoctiengthaiphuongnam",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1144038967752028",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "ThuePhong_Album_ThuePhongGiaTot_0622_0460",
+    "program": "Thuê Phòng",
+    "section": "ThuePhong_Album_ThuePhongGiaTot_0622_0460",
+    "channel": "Album",
+    "page": "PNECentre",
+    "url": "https://www.facebook.com/PNECentre/posts/1176426063140460",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "ThuePhong_Album_UuDaiPhongTraining_0622_5833",
+    "program": "Thuê Phòng",
+    "section": "ThuePhong_Album_UuDaiPhongTraining_0622_5833",
+    "channel": "Album",
+    "page": "PNECentre",
+    "url": "https://www.facebook.com/PNECentre/posts/1176438999805833",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Trung_Album_Offline_LKG_LoTrinh4KyNang_0825_5998",
+    "program": "Tiếng Trung",
+    "section": "Trung_Album_Offline_LKG_LoTrinh4KyNang_0825_5998",
+    "channel": "Album",
+    "page": "HocTiengTrungPhuongNam",
+    "url": "https://www.facebook.com/HocTiengTrungPhuongNam/posts/1163949712435998",
+    "expiry_date": "2026-12-29",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Trung_Album_Online_LKG_0825_2552",
+    "program": "Tiếng Trung",
+    "section": "Trung_Album_Online_LKG_0825_2552",
+    "channel": "Album",
+    "page": "HocTiengTrungPhuongNam",
+    "url": "https://www.facebook.com/HocTiengTrungPhuongNam/posts/1163950839102552",
+    "expiry_date": "2026-12-23",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Trung_Photo_Offline_LKG_0325_3646",
+    "program": "Tiếng Trung",
+    "section": "Trung_Photo_Offline_LKG_0325_3646",
+    "channel": "Photo",
+    "page": "HocTiengTrungPhuongNam",
+    "url": "https://www.facebook.com/HocTiengTrungPhuongNam/posts/1058239909673646",
+    "expiry_date": "2026-12-29",
+    "needs_renewal": true,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Trung_Photo_Online1Kem1_ChotSo24h_0725_9812",
+    "program": "Tiếng Trung",
+    "section": "Trung_Photo_Online1Kem1_ChotSo24h_0725_9812",
+    "channel": "Photo",
+    "page": "HocTiengTrungPhuongNam",
+    "url": "https://www.facebook.com/HocTiengTrungPhuongNam/posts/1151678240329812",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Trung_Reels_Offline_LoiHocTiengTrung_0825_9390",
+    "program": "Tiếng Trung",
+    "section": "Trung_Reels_Offline_LoiHocTiengTrung_0825_9390",
+    "channel": "Reels",
+    "page": "HocTiengTrungPhuongNam",
+    "url": "https://www.facebook.com/HocTiengTrungPhuongNam/posts/1180615790769390",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Trung_Reels_Online_Hoc1Duoc3_0925_2475",
+    "program": "Tiếng Trung",
+    "section": "Trung_Reels_Online_Hoc1Duoc3_0925_2475",
+    "channel": "Reels",
+    "page": "HocTiengTrungPhuongNam",
+    "url": "https://www.facebook.com/HocTiengTrungPhuongNam/posts/1184984940332475",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "Y_Photo_Online1Kem1_0323_8756",
+    "program": "Tiếng Ý",
+    "section": "Y_Photo_Online1Kem1_0323_8756",
+    "channel": "Photo",
+    "page": "gioitiengy",
+    "url": "https://www.facebook.com/gioitiengy/posts/695008482418756",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "",
+    "person": null
+  },
+  {
+    "id": "ao-new-001",
+    "program": "CĐVB Áo",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/DieuDuongAo/posts/122186349860073185",
+    "expiry_date": "2027-04-24",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "ao-new-002",
+    "program": "CĐVB Áo",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/DieuDuongAo/posts/122197852742073185",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "ao-new-003",
+    "program": "CĐVB Áo",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/DieuDuongAo/posts/122250648266073185",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "ao-new-004",
+    "program": "CĐVB Áo",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/DieuDuongAo/posts/122250784202073185",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "ao-new-005",
+    "program": "CĐVB Áo",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/DieuDuongAo/events",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-001",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/duhocducphuongnam/posts/788148513510669",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-002",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/DuHocNgheDuc.PhuongNamEducation/posts/122253661994233960",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-003",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/v/1AcG2umUsz",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-004",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/DuHocPhuongNamEducation/posts/546271861734179",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-005",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/v/1PD8MWAKWE",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-006",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/DuHocPhuongNamEducation/posts/456724814022218",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-007",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/p/17p5TmRM3i",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-008",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/DuHocPhuongNamEducation/posts/703634439331253",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-009",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/DuHocPhuongNamEducation/posts/702913072736723",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-010",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/18Zy17VDQ3",
+    "expiry_date": "2026-05-03",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-011",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/duhocducphuongnam/posts/1265367602455422",
+    "expiry_date": "2026-05-03",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-012",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/duhocducphuongnam/posts/1265368499121999",
+    "expiry_date": "2026-05-03",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-013",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/duhocducphuongnam/posts/1269316445393871",
+    "expiry_date": "2026-05-03",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-014",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/duhocducphuongnam/posts/1269967491995433",
+    "expiry_date": "2026-05-03",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-015",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/duhocducphuongnam/posts/1270735975251918",
+    "expiry_date": "2026-05-03",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-016",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/duhocducphuongnam/posts/1271547065170809",
+    "expiry_date": "2026-05-03",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-017",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/duhocducphuongnam/posts/1272395961752586",
+    "expiry_date": "2026-05-03",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-018",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/duhocducphuongnam/posts/1273263678332481",
+    "expiry_date": "2026-05-03",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-019",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/duhocducphuongnam/posts/1274102204915295",
+    "expiry_date": "2026-05-03",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-020",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/1328462929102116",
+    "expiry_date": "2026-05-23",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-021",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/1729007464805681",
+    "expiry_date": "2026-05-23",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "ao-new-006",
+    "program": "CĐVB Áo",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/DuHocNgheDuc.PhuongNamEducation/posts/122297449460233960",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-001",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122264800124075171",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-001",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/1056340343204919",
+    "expiry_date": "2026-12-23",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-022",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/gioitiengtaybannha/posts/779813904691189",
+    "expiry_date": "2026-12-23",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-002",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122171082074075171",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-002",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/878253374346951",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-023",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/1169327251695011",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-003",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/936263785212576",
+    "expiry_date": "2026-12-23",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-004",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1348969153925674",
+    "expiry_date": "2026-05-30",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-024",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/p/1BTyzKFvTu",
+    "expiry_date": "2026-05-30",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-005",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/878226751016280",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-003",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengducphuongnam/posts/608095601454562",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-025",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/1304496441544742",
+    "expiry_date": "2026-06-16",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-026",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/100064868883489/posts/1037185088453778",
+    "expiry_date": "2026-05-26",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-027",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/1191458782581375",
+    "expiry_date": "2026-06-16",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-028",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/100064868883489/posts/1056338113205142",
+    "expiry_date": "2026-05-26",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhk-new-001",
+    "program": "Du học Hàn Quốc",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctienghanphuongnam/posts/754151283627476",
+    "expiry_date": "2026-05-18",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-006",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengTrungPhuongNam/posts/1072038744960429",
+    "expiry_date": "2026-04-28",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-004",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122219413292075171",
+    "expiry_date": "2026-12-29",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-007",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/1121105850061701",
+    "expiry_date": "2026-12-29",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-029",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/1344685783921981",
+    "expiry_date": "2026-05-18",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-005",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122252439290075171",
+    "expiry_date": "2026-06-16",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-030",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/100064868883489/posts/1296183715887246",
+    "expiry_date": "2026-05-26",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-006",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122271794336075171",
+    "expiry_date": "2026-06-16",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-007",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122277263654075171",
+    "expiry_date": "2026-06-01",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhk-new-002",
+    "program": "Du học Hàn Quốc",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctienghanphuongnam/posts/616226924086580",
+    "expiry_date": "2026-12-29",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-008",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122136823832075171",
+    "expiry_date": "2026-05-19",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-009",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122277264062075171",
+    "expiry_date": "2026-05-19",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "osd-new-001",
+    "program": "OSD",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/61578408661562/posts/122162813258946955",
+    "expiry_date": "2026-05-21",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-010",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122274402626075171",
+    "expiry_date": "2026-05-21",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "osd-new-002",
+    "program": "OSD",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/61578408661562/posts/122163654962946955",
+    "expiry_date": "2026-05-21",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "osd-new-003",
+    "program": "OSD",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/1645749823296162",
+    "expiry_date": "2026-05-21",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "osd-new-004",
+    "program": "OSD",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/26091528200526093",
+    "expiry_date": "2026-05-21",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-011",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122273762786075171",
+    "expiry_date": "2026-05-21",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "osd-new-005",
+    "program": "OSD",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/61578408661562/posts/122162982830946955",
+    "expiry_date": "2026-05-21",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "osd-new-006",
+    "program": "OSD",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/events/1434651568411313",
+    "expiry_date": "2026-05-09",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-008",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/1222760559896229",
+    "expiry_date": "2026-12-20",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-009",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1272507304905193",
+    "expiry_date": "2026-04-25",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-031",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/p/18DUysSvv7",
+    "expiry_date": "2026-04-13",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-012",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122265627848075171",
+    "expiry_date": "2026-04-29",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "osd-new-007",
+    "program": "OSD",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/events/967900385891257",
+    "expiry_date": "2026-04-11",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "osd-new-008",
+    "program": "OSD",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/34806103489004766",
+    "expiry_date": "2026-04-11",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "osd-new-009",
+    "program": "OSD",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/1ChZCwvYNK",
+    "expiry_date": "2026-04-25",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-032",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/1630918154812776",
+    "expiry_date": "2026-04-25",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-013",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122251027394075171",
+    "expiry_date": "2026-12-23",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-011",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/1121103776728575",
+    "expiry_date": "2026-12-23",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-012",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1156823846473540",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-033",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/4320942888162782",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-034",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/v/19u4rGuoKK",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-035",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/gioitiengtaybannha/posts/877631424909436",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-036",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/1812550526121877",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-013",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1310431677779422",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-037",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/v/17oJzB3c2v",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-014",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122264617010075171",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-014",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/1296181915887426",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhk-new-003",
+    "program": "Du học Hàn Quốc",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctienghanphuongnam/posts/329870979388844",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-015",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/1328537835985167",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhk-new-004",
+    "program": "Du học Hàn Quốc",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctienghanphuongnam/posts/484670647242209",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-016",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/v/1D5Y4HqkQG",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-017",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/1788703205125806",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-018",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/1218373893668229",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-038",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/gioitiengtaybannha/posts/781349671204279",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-039",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/r/1BdRf9NtLG",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-040",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/704634659116300",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-041",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/v/1Ae37ToLMT",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-042",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/956490703366350",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-043",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/gioitiengtaybannha/posts/781588367847076",
+    "expiry_date": "2027-01-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-019",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/gioitiengy/posts/1052109303375337",
+    "expiry_date": "2027-01-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-044",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/930341346319600",
+    "expiry_date": "2027-01-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-020",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/gioitiengy/posts/1253671006552498",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-021",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1310432757779314",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-015",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122269900178075171",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-045",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/gioitiengtaybannha/posts/877632401576005",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-022",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/1328535455985405",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-046",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/v/17dxWDYLkT",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-047",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/v/1EhcVyLm7S",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-048",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/v/1HC4po843i",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-023",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/951100583728896",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-016",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122264344910075171",
+    "expiry_date": "2027-02-28",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-017",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122264347754075171",
+    "expiry_date": "2026-03-25",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-018",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122264348582075171",
+    "expiry_date": "2026-03-25",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-019",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122269300928075171",
+    "expiry_date": "2026-03-25",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "osd-new-010",
+    "program": "OSD",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/events/2134584823984526",
+    "expiry_date": "2026-03-28",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-049",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/2196524184185421",
+    "expiry_date": "2026-12-20",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-050",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/4126738274236412",
+    "expiry_date": "2026-01-26",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-024",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengphapphuongnam/posts/1222765146562437",
+    "expiry_date": "2026-12-29",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-025",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1272509134905010",
+    "expiry_date": "2026-01-27",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-020",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122257728008075171",
+    "expiry_date": "2026-12-31",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-021",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengducphuongnam/posts/1173476508249799",
+    "expiry_date": "2026-12-31",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "osd-new-011",
+    "program": "OSD",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/1Cuk5YZu46",
+    "expiry_date": "2026-01-10",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-051",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/1BeEnR2H2w",
+    "expiry_date": "2026-01-31",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-052",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/1CFsPmgJEs",
+    "expiry_date": "2026-01-24",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "ao-new-007",
+    "program": "CĐVB Áo",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/v/19CzNPFBsB",
+    "expiry_date": "2026-09-30",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "ao-new-008",
+    "program": "CĐVB Áo",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/v/1BR1GzvwLh",
+    "expiry_date": "2026-11-30",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-053",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/watch",
+    "expiry_date": "2026-11-30",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-054",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/v/1ahG8WCvMq",
+    "expiry_date": "2026-11-30",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-055",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/DuHocNgheDuc.PhuongNamEducation/posts/122284939658233960",
+    "expiry_date": "2026-12-31",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-022",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122233075496075171",
+    "expiry_date": "2026-12-23",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-056",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/830507796807908",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-023",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122218807292075171",
+    "expiry_date": "2026-12-29",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-024",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122233076306075171",
+    "expiry_date": "2026-12-29",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-025",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122137005152075171",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-026",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122247668000075171",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-027",
+    "program": "Du học nghề Đức",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/HocTiengDuc.PhuongNamEducation/posts/122247585608075171",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "osd-new-012",
+    "program": "OSD",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/events/815197671513766",
+    "expiry_date": "2026-12-06",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-057",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/17aAAry4o2",
+    "expiry_date": "2026-12-20",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-058",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/share/1CxH43XmRV",
+    "expiry_date": "2026-12-27",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "dhd-new-028",
+    "program": "Du học nghề Đức",
+    "section": "Du học nghề (sub)",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/reel/1458438012681225",
+    "expiry_date": "2026-05-09",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-010",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1052382120251047",
+    "expiry_date": "2026-12-23",
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "khac-new-059",
+    "program": "Khác",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/watch/?v=615493941647878",
+    "expiry_date": "2026-11-30",
+    "needs_renewal": true,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  },
+  {
+    "id": "t-new-026",
+    "program": "Tiếng",
+    "section": "Chung",
+    "channel": "",
+    "page": "",
+    "url": "https://www.facebook.com/hoctiengthaiphuongnam/posts/1052382120251047?rdid=z5Bwnhc1E7li1RLk\#",
+    "expiry_date": null,
+    "needs_renewal": false,
+    "active": true,
+    "note": "auto-added from sheet scan",
+    "person": null
+  }
+];
+
+const today = new Date(); today.setHours(0,0,0,0);
+document.getElementById('today-str').textContent = today.toLocaleDateString('vi-VN',{weekday:'long',day:'2-digit',month:'2-digit',year:'numeric'});
+
+// ─── LOCALSTORAGE OVERRIDES (needs_renewal + expiry_date) ────────────────────
+const OV_KEY = 'pne_renewal_overrides';
+function loadOv() { try { return JSON.parse(localStorage.getItem(OV_KEY)||'{}'); } catch(e) { return {}; } }
+function saveOv(id, patch) {
+  const ov = loadOv();
+  if (patch === null) { delete ov[id]; }
+  else { ov[id] = patch; }
+  localStorage.setItem(OV_KEY, JSON.stringify(ov));
+}
+// Lưu giá trị gốc trước khi áp override
+const ORIG = {};
+LINKS.forEach(l => { ORIG[l.id] = { needs_renewal: l.needs_renewal, expiry_date: l.expiry_date }; });
+// Áp override lên LINKS (xử lý cả format cũ boolean và format mới object)
+const _ov = loadOv();
+LINKS.forEach(l => {
+  if (!(l.id in _ov)) return;
+  const ov = _ov[l.id];
+  if (ov !== null && typeof ov === 'object') {
+    if ('needs_renewal' in ov) l.needs_renewal = ov.needs_renewal;
+    if ('expiry_date'   in ov) l.expiry_date   = ov.expiry_date;
+  } else if (typeof ov === 'boolean') {
+    // Format cũ: chỉ lưu boolean needs_renewal
+    l.needs_renewal = ov;
+  }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+document.getElementById('db-meta').textContent = 'Cập nhật ' + DB_UPDATED + ' lúc ' + DB_UPDATED_TIME + ' · ' + LINKS.length + ' link';
+document.getElementById('footer-note').textContent = 'Double-click để mở · Cập nhật bởi Claude khi thêm link mới · ' + LINKS.length + ' link đang theo dõi';
+
+// Tab counts
+document.getElementById('cnt-all').textContent   = LINKS.length;
+document.getElementById('cnt-dhd').textContent   = LINKS.filter(l=>l.program==='Du học nghề Đức').length;
+document.getElementById('cnt-dhdd').textContent  = LINKS.filter(l=>l.program==='Du học Đức').length;
+document.getElementById('cnt-ao').textContent    = LINKS.filter(l=>l.program==='CDVBA').length;
+document.getElementById('cnt-dhk').textContent   = LINKS.filter(l=>l.program==='Du học Hàn Quốc').length;
+document.getElementById('cnt-tieng').textContent = LINKS.filter(l=>l.program.startsWith('Tiếng')).length;
+document.getElementById('cnt-osd').textContent   = LINKS.filter(l=>l.program==='Kỳ thi OSD').length;
+document.getElementById('cnt-khac').textContent  = LINKS.filter(l=>['Thuê Phòng','EduCRM'].includes(l.program)).length;
+
+function daysDiff(exp) { return exp ? Math.floor((new Date(exp)-today)/86400000) : null; }
+function getStatus(l) {
+  if (!l.active) return 'ĐÃ NGỪNG';       // X trong cột Ngừng chạy → luôn là Đã ngừng
+  if (!l.expiry_date) return 'LUÔN CHẠY';
+  const d = daysDiff(l.expiry_date);
+  if (l.needs_renewal) {
+    return d < 0 ? 'HẾT HẠN' : d <= 14 ? 'GIA HẠN' : 'OK';
+  } else {
+    return d < 0 ? 'ĐÃ NGỪNG' : d <= 7 ? 'SẮP HẾT' : 'OK';
+  }
+}
+
+// ─── SINH HTML CHO 1 ROW ────────────────────────────────────────────────────
+function rowHtml(l) {
+  const st = getStatus(l);
+  const d  = daysDiff(l.expiry_date);
+  let pb, progLabel;
+  if (l.program==='Du học nghề Đức')      { pb='b-dhd';  progLabel='Du học nghề Đức'; }
+  else if (l.program==='Du học Đức')      { pb='b-dhdd'; progLabel='Du học Đức'; }
+  else if (l.program==='CDVBA')           { pb='b-ao';   progLabel='CDVBA'; }
+  else if (l.program==='Kỳ thi OSD')      { pb='b-osd';  progLabel='Kỳ thi OSD'; }
+  else if (l.program==='Du học Hàn Quốc') { pb='b-dhk';  progLabel='Du học Hàn Quốc'; }
+  else if (['Thuê Phòng','EduCRM'].includes(l.program)) { pb='b-khac'; progLabel=l.program; }
+  else if (l.program.startsWith('Tiếng')) {
+    const lm={'Tiếng Đức':'b-lang-duc','Tiếng Pháp':'b-lang-phap','Tiếng Hàn':'b-lang-han',
+              'Tiếng Thái':'b-lang-thai','Tiếng Tây Ban Nha':'b-lang-tbn',
+              'Tiếng Trung':'b-lang-trung','Tiếng Nhật':'b-lang-nhat',
+              'Tiếng Ý':'b-lang-other','Tiếng Nga':'b-lang-other'};
+    pb=lm[l.program]||'b-lang-other'; progLabel=l.program;
+  }
+  let chCell;
+  if (l.program.startsWith('Tiếng')||l.program==='Du học Hàn Quốc'||['Thuê Phòng','EduCRM'].includes(l.program))
+    chCell=`<span style="color:#bbb;font-size:11px">—</span>`;
+  else chCell=`<span class="badge b-page">${l.page||l.channel||''}</span>`;
+
+  let sc, stLabel, dt, dateStr;
+  if (!l.active) {
+    sc='b-off'; stLabel='Tạm dừng'; dt='—'; dateStr=l.expiry_date||'—';
+  } else if (!l.expiry_date) {
+    sc='b-always'; stLabel='Luôn chạy'; dt='∞'; dateStr='—';
+  } else {
+    dateStr=new Date(l.expiry_date).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'});
+    if (l.needs_renewal) {
+      if (st==='HẾT HẠN')      { sc='b-het';     stLabel='Hết hạn!';    dt=`<span class="days neg">${d} ngày</span>`; }
+      else if (st==='GIA HẠN') { sc='b-gia-han'; stLabel='Cần gia hạn'; dt=`<span class="days warn">+${d} ngày</span>`; }
+      else                     { sc='b-ok';      stLabel='OK';           dt=`<span class="days fine">+${d} ngày</span>`; }
+    } else {
+      if (st==='ĐÃ NGỪNG')     { sc='b-da-ngung'; stLabel='Đã ngừng'; dt=`<span class="days" style="color:#94a3b8">${d} ngày</span>`; }
+      else if (st==='SẮP HẾT') { sc='b-sap';      stLabel='Sắp hết';  dt=`<span class="days urg">+${d} ngày</span>`; }
+      else                     { sc='b-ok';        stLabel='OK';       dt=`<span class="days fine">+${d} ngày</span>`; }
+    }
+  }
+  const shortUrl=l.url.replace(/https?:\/\/(www\.)?facebook\.com\//,'fb/');
+  let renewBtn='';
+  if (ORIG[l.id]&&ORIG[l.id].expiry_date&&l.active) {
+    if (!l.expiry_date)    renewBtn=`<span class="btn-renewal is-always">∞ Luôn chạy</span>`;
+    else if (l.needs_renewal) renewBtn=`<span class="btn-renewal is-renewal">↻ Gia hạn</span>`;
+    else               renewBtn=`<span class="btn-renewal no-renewal">⏹ Ngừng</span>`;
+  }
+  // ── Cột Hành động: workflow 4 bước (chỉ với link needs_renewal + active) ──
+  const safeId = l.id.replace(/'/g, "\\'");
+  let actionCell = '<td></td>';
+  if (l.needs_renewal && l.active) {
+    const ws  = l.workflow_state || '';
+    const pnd = l.pending_new_date || '';   // hạn mới đã nhập ở bước 3, chờ B xác nhận
+    let inner = '';
+    if (!ws) {
+      inner = `<button class="btn-wf btn-wf-1" onclick="doWf('${safeId}','gro_requested')">🗑 Yêu cầu gỡ ads</button>`;
+    } else if (ws === 'gro_requested') {
+      inner = `<span class="wf-tag">⏳ Chờ gỡ ads</span>`
+            + `<button class="btn-wf btn-wf-2" onclick="doWf('${safeId}','gro_done')">✅ Đã gỡ xong</button>`;
+    } else if (ws === 'gro_done') {
+      inner = `<span class="wf-tag">⏳ Chờ cập nhật nội dung</span>`
+            + `<button class="btn-wf btn-wf-3" onclick="doWfDate('${safeId}')">✅ Đã cập nhật + nhập hạn mới</button>`;
+    } else if (ws === 'upd_done') {
+      const pDisp = pnd ? _pndDisp(pnd) : '?';
+      inner = `<span class="wf-tag">⏳ Chờ set ads — hạn: ${pDisp}</span>`
+            + `<button class="btn-wf btn-wf-4" onclick="doWf('${safeId}','completed')">✅ Đã set ads</button>`;
+    } else if (ws === 'completed') {
+      inner = `<span class="wf-done">✅ Hoàn thành</span>`
+            + `<button class="btn-wf btn-wf-r" onclick="doWf('${safeId}','')">↺ Reset</button>`;
+    }
+    actionCell = `<td><div class="wf-cell">${inner}</div></td>`;
+  }
+  return `<tr data-lid="${l.id}">
+    <td><span class="badge ${pb}">${progLabel}</span></td>
+    <td title="${l.section}">${l.section}</td>
+    <td>${chCell}</td>
+    <td style="font-size:11px">${dateStr}</td>
+    <td style="text-align:right">${typeof dt==='string'&&dt.startsWith('<')?dt:`<span class="days always">${dt}</span>`}</td>
+    <td><span class="badge ${sc}">${stLabel}</span></td>
+    <td>${renewBtn}</td>
+    <td style="font-size:11px;color:${l.person?'#1a1a18':'#bbb'}">${l.person||'—'}</td>
+    <td><a href="${l.url}" target="_blank" title="${l.url}">${shortUrl}</a></td>
+    <td class="note-cell" title="${l.note||''}">${l.note||''}</td>
+    ${actionCell}
+  </tr>`;
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+let aP='all', aS='all', aLang='all', aPerson='all', q='';
+const LANG_PROG_MAP = {
+  'Đức':'Tiếng Đức','Pháp':'Tiếng Pháp','Hàn':'Tiếng Hàn','Thái':'Tiếng Thái',
+  'TBN':'Tiếng Tây Ban Nha','Trung':'Tiếng Trung','Nhật':'Tiếng Nhật',
+  'Ý':'Tiếng Ý','Nga':'Tiếng Nga'
+};
+
+function updateCards(rows) {
+  // HẾT HẠN = chỉ link needs_renewal=true đã quá deadline (không gộp ĐÃ NGỪNG)
+  document.getElementById('c-het').textContent    = rows.filter(l=>getStatus(l)==='HẾT HẠN').length;
+  // Sắp tới: chỉ GIA HẠN (needs_renewal=true, ≤14 ngày) — không gộp SẮP HẾT
+  document.getElementById('c-sap').textContent    = rows.filter(l=>getStatus(l)==='GIA HẠN').length;
+  document.getElementById('c-ok').textContent     = rows.filter(l=>getStatus(l)==='OK').length;
+  document.getElementById('c-always').textContent = rows.filter(l=>getStatus(l)==='LUÔN CHẠY').length;
+}
+
+function render() {
+  // Base: lọc theo chương trình + ngôn ngữ + tìm kiếm (KHÔNG lọc status)
+  // Dùng để tính cards — luôn phản ánh tổng quan, không bị ảnh hưởng bởi tab status
+  const base = LINKS.filter(l => {
+    if (aP === 'Khác') { if (!['Thuê Phòng','EduCRM'].includes(l.program)) return false; }
+    else if (aP === 'Tiếng') { if (!l.program.startsWith('Tiếng')) return false; }
+    else if (aP !== 'all' && l.program !== aP) return false;
+    if (aLang !== 'all' && l.program !== (LANG_PROG_MAP[aLang]||aLang)) return false;
+    if (aPerson !== 'all' && (l.person||null) !== aPerson) return false;
+    if (q) {
+      const qq = q.toLowerCase();
+      if (!l.url.toLowerCase().includes(qq) && !l.section.toLowerCase().includes(qq) &&
+          !l.program.toLowerCase().includes(qq) && !(l.note||'').toLowerCase().includes(qq) &&
+          !(l.page||'').toLowerCase().includes(qq)) return false;
+    }
+    return true;
+  });
+
+  updateCards(base);
+
+  // Rows: thêm lọc theo status tab để hiện bảng
+  const rows = base.filter(l => {
+    const st = getStatus(l);
+    if (aS !== 'all' && st !== aS) return false;
+    return true;
+  }).sort((a,b)=>{
+    const sa=getStatus(a), sb=getStatus(b);
+    const order = {'HẾT HẠN':0,'GIA HẠN':1,'SẮP HẾT':2,'OK':3,'LUÔN CHẠY':4,'ĐÃ NGỪNG':5};
+    if (order[sa] !== order[sb]) return order[sa]-order[sb];
+    const da=daysDiff(a.expiry_date), db=daysDiff(b.expiry_date);
+    if (da===null&&db===null) return 0;
+    if (da===null) return 1;
+    if (db===null) return -1;
+    return da-db;
+  });
+
+  document.getElementById('cnt-badge').textContent = rows.length + ' / ' + LINKS.length + ' link';
+
+  const tb = document.getElementById('tb');
+  if (!rows.length) { tb.innerHTML='<tr><td colspan="11" class="empty">Không có link phù hợp</td></tr>'; return; }
+
+  const _sy = window.scrollY;
+  tb.innerHTML = rows.map(rowHtml).join('');
+  window.scrollTo(0, _sy);
+}
+
+// Event delegation — bền hơn, không bị mất khi DOM thay đổi
+document.getElementById('prog-tabs').addEventListener('click', function(e) {
+  const t = e.target.closest('.ptab');
+  if (!t) return;
+  document.querySelectorAll('.ptab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active'); aP=t.dataset.p;
+  document.getElementById('lang-sel').style.display = (aP==='Tiếng'||aP==='all')?'':'none';
+  render();
+});
+document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active'); aS=t.dataset.s; render();
+}));
+document.getElementById('lang-sel').addEventListener('change',e=>{aLang=e.target.value;render();});
+document.getElementById('person-sel').addEventListener('change',e=>{aPerson=e.target.value;render();});
+document.getElementById('q').addEventListener('input',e=>{q=e.target.value.trim().toLowerCase();render();});
+
+// Toggle Loại — cập nhật đúng row, không sort lại toàn bảng
+function toggleRenewal(id) {
+  const link = LINKS.find(l => l.id === id);
+  const orig = ORIG[id];
+  if (!link || !orig) return;
+  if (!link.expiry_date) {
+    link.expiry_date   = orig.expiry_date;
+    link.needs_renewal = orig.needs_renewal !== false;
+    saveOv(id, null);
+  } else if (link.needs_renewal) {
+    link.needs_renewal = false;
+    saveOv(id, { needs_renewal: false });
+  } else {
+    link.expiry_date = null;
+    saveOv(id, { expiry_date: null });
+  }
+  // Chỉ cập nhật đúng row đó, không render lại toàn bảng
+  const tr = document.querySelector(`tr[data-lid="${id}"]`);
+  if (tr) {
+    const newTr = document.createElement('tbody');
+    newTr.innerHTML = rowHtml(link);
+    tr.replaceWith(newTr.firstElementChild);
+  }
+  // Cập nhật lại các ô đếm (cards)
+  const base = LINKS.filter(l => {
+    if (aP==='Khác') { if (!['Thuê Phòng','EduCRM'].includes(l.program)) return false; }
+    else if (aP==='Tiếng') { if (!l.program.startsWith('Tiếng')) return false; }
+    else if (aP!=='all' && l.program!==aP) return false;
+    if (aLang!=='all' && l.program!==(LANG_PROG_MAP[aLang]||aLang)) return false;
+    if (aPerson!=='all' && (l.person||null)!==aPerson) return false;
+    return true;
+  });
+  updateCards(base);
+}
+
+// ─── REALTIME SYNC TỪ GOOGLE SHEET ──────────────────────────────────────────
+const SHEET_API = 'https://script.google.com/macros/s/AKfycbyKZjH69yBvHSSCUuQcYibsD63Yvs_lKKg4VWgay4CHPjqGcGmhn6mGMoy58sYwBxN53A/exec';
+
+function normalizeUrl(u) {
+  return (u||'').trim().replace(/\/$/, '')
+    .replace('http://','https://')
+    .replace('https://facebook.com/','https://www.facebook.com/');
+}
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/);
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    if (!lines[i].trim()) continue;
+    const cols = lines[i].split(',');
+    const obj = {};
+    headers.forEach((h, j) => obj[h] = (cols[j]||'').trim());
+    rows.push(obj);
+  }
+  return rows;
+}
+
+function setStatus(el, msg, color) {
+  el.textContent = msg;
+  el.style.color = color || '#6b6a65';
+}
+
+function processSheetRows(rows) {
+  const statusEl = document.getElementById('sync-status');
+  try {
+    // ── Full replace: Sheet là nguồn dữ liệu chính ──
+    const newLinks = [];
+    rows.forEach((row, idx) => {
+      // Hỗ trợ cả 2 format: column name (từ Apps Script) hoặc index array
+      const get = (key, fallback='') => {
+        if (Array.isArray(row)) return row[key] || fallback;
+        return row[key] !== undefined && row[key] !== null ? row[key] : fallback;
+      };
+
+      // Map từ CONTENT_MASTER columns
+      const url = (get('url') || get('Link bài đăng') || get(2, '')).toString().trim();
+      if (!url || !url.includes('facebook')) return;
+
+      const program    = (get('program') || get('Chương trình') || get(0, '')).toString().trim();
+      const contentId  = (get('section') || get('Content ID') || get(1, '')).toString().trim();
+      const channel    = (get('channel') || get('Loại') || get(3, '')).toString().trim();
+      const person     = (get('person') || get('Người phụ trách') || get(8, null)) || null;
+      const note       = (get('note') || get('Ghi chú') || get(9, '')).toString().trim();
+      const page       = (get('page') || get('Page') || get(10, '')).toString().trim();
+      const ngungChay  = (get('Ngừng chạy') || get(7, '')).toString().trim().toUpperCase();
+      const active     = ngungChay !== 'X';
+
+      // Xử lý ngày kết thúc
+      let expiry_date = null;
+      const rawExpiry = get('expiry_date') || get('Ngày kết thúc') || get(5, '');
+      if (rawExpiry && rawExpiry !== 'Không có thời hạn' && rawExpiry.toString().trim() !== '') {
+        const dateStr = rawExpiry.toString().match(/^\d{4}-\d{2}-\d{2}/);
+        if (dateStr) expiry_date = dateStr[0];
+      }
+
+      // needs_renewal: có ngày kết thúc = cần gia hạn khi hết, không có = luôn chạy
+      const needs_renewal = expiry_date !== null;
+
+      newLinks.push({
+        id: contentId || ('sheet-' + (idx + 1)),
+        program: program || 'Khác',
+        section: contentId,
+        channel: channel,
+        url: url,
+        expiry_date: expiry_date,
+        active: active,
+        note: note,
+        page: page,
+        person: person,
+        needs_renewal: needs_renewal
+      });
+    });
+
+    if (newLinks.length === 0) {
+      setStatus(statusEl, '⚠ Sheet trả về 0 link hợp lệ', '#92400e');
+      render();
+      return;
+    }
+
+    // Replace toàn bộ LINKS
+    LINKS.length = 0;
+    newLinks.forEach(l => LINKS.push(l));
+
+    const now = new Date().toLocaleTimeString('vi-VN');
+    setStatus(statusEl, `✓ Đã tải ${LINKS.length} link từ Sheet lúc ${now}`, '#166534');
+    DB_UPDATED = new Date().toISOString().slice(0,10);
+    document.getElementById('db-meta').textContent = 'Sheet: ' + now + ' · ' + LINKS.length + ' link';
+    render();
+  } catch(err) {
+    setStatus(statusEl, '⚠ Lỗi xử lý sheet — ' + err.message, '#92400e');
+    console.warn('Sheet error:', err);
+    render();
+  }
+}
+
+function loadFromSheet() {
+  const statusEl = document.getElementById('sync-status');
+  setStatus(statusEl, '⟳ Đang tải từ Google Sheet...', '#1d4ed8');
+
+  // Dùng fetch + credentials:'omit' để bỏ cookie Google (tránh redirect /u/2/ khi đa tài khoản)
+  fetch(SHEET_API + '?t=' + Date.now(), { credentials: 'omit', mode: 'cors' })
+    .then(function(r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      processSheetRows(data);
+    })
+    .catch(function() {
+      // Fallback JSONP nếu fetch không được (file://)
+      const cbName = '_sheetCb_' + Date.now();
+      window[cbName] = function(data) {
+        delete window[cbName];
+        document.getElementById('_sheet_script') && document.getElementById('_sheet_script').remove();
+        processSheetRows(data);
+      };
+      const s = document.createElement('script');
+      s.id = '_sheet_script';
+      s.onerror = function() {
+        setStatus(statusEl, '⚠ Không tải được sheet — data cập nhật lúc ' + DB_UPDATED_TIME + ' ngày ' + DB_UPDATED, '#92400e');
+        render();
+      };
+      s.src = SHEET_API + '?callback=' + cbName + '&t=' + Date.now();
+      document.head.appendChild(s);
+    });
+}
+
+// ─── LƯU THAY ĐỔI VỀ ads_links_db.json ─────────────────────────────────────
+function fallbackDownload(blob) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'ads_links_db.json';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function saveToDB() {
+  const btn = document.getElementById('btn-save');
+  const json = JSON.stringify(LINKS, null, 2);
+  const blob = new Blob([json], {type: 'application/json'});
+
+  if (window.showSaveFilePicker) {
+    btn.textContent = '⟳ Đang lưu...';
+    btn.classList.add('saving');
+    window.showSaveFilePicker({
+      suggestedName: 'ads_links_db.json',
+      types: [{ description: 'JSON', accept: { 'application/json': ['.json'] } }]
+    })
+    .then(handle => handle.createWritable())
+    .then(writable => writable.write(blob).then(() => writable.close()))
+    .then(() => {
+      btn.textContent = '✓ Đã lưu!';
+      btn.style.color = '#166534';
+      setTimeout(() => {
+        btn.textContent = '💾 Lưu thay đổi';
+        btn.style.color = '';
+        btn.classList.remove('saving');
+      }, 2500);
+    })
+    .catch(e => {
+      btn.textContent = '💾 Lưu thay đổi';
+      btn.style.color = '';
+      btn.classList.remove('saving');
+      if (e.name !== 'AbortError') fallbackDownload(blob);
+    });
+  } else {
+    // Fallback: tải xuống file, user tự thay vào thư mục
+    fallbackDownload(blob);
+    btn.textContent = '✓ Đã tải xuống';
+    btn.style.color = '#166534';
+    setTimeout(() => { btn.textContent = '💾 Lưu thay đổi'; btn.style.color = ''; }, 2500);
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Render offline trước, sau đó fetch realtime từ sheet
+render();
+loadFromSheet();
+
+// ─── AUTO-REFRESH ────────────────────────────────────────────────────────────
+const AUTO_REFRESH_SEC = 120; // tự động fetch lại mỗi 2 phút
+let _nextRefreshIn = AUTO_REFRESH_SEC;
+let _countdownInterval = null;
+
+function startCountdown() {
+  _nextRefreshIn = AUTO_REFRESH_SEC;
+  clearInterval(_countdownInterval);
+  _countdownInterval = setInterval(function() {
+    _nextRefreshIn--;
+    const statusEl = document.getElementById('sync-status');
+    // không hiện countdown
+    if (_nextRefreshIn <= 0) {
+      clearInterval(_countdownInterval);
+      loadFromSheet();
+    }
+  }, 1000);
+}
+
+// Cập nhật số đếm trên tab buttons sau khi LINKS được thay thế
+function updateTabCounts() {
+  document.getElementById('cnt-all').textContent   = LINKS.length;
+  document.getElementById('cnt-dhd').textContent   = LINKS.filter(l=>l.program==='Du học nghề Đức').length;
+  document.getElementById('cnt-dhdd').textContent  = LINKS.filter(l=>l.program==='Du học Đức').length;
+  document.getElementById('cnt-ao').textContent    = LINKS.filter(l=>l.program==='CDVBA').length;
+  document.getElementById('cnt-dhk').textContent   = LINKS.filter(l=>l.program==='Du học Hàn Quốc').length;
+  document.getElementById('cnt-tieng').textContent = LINKS.filter(l=>l.program.startsWith('Tiếng')).length;
+  document.getElementById('cnt-osd').textContent   = LINKS.filter(l=>l.program==='Kỳ thi OSD').length;
+  document.getElementById('cnt-khac').textContent  = LINKS.filter(l=>['Thuê Phòng','EduCRM'].includes(l.program)).length;
+  const footerNote = document.getElementById('footer-note');
+  if (footerNote) footerNote.textContent = 'Double-click để mở · Cập nhật bởi Claude khi thêm link mới · ' + LINKS.length + ' link đang theo dõi';
+}
+
+// ─── WORKFLOW 4 BƯỚC ──────────────────────────────────────────────────────────
+
+/** Format YYYY-MM-DD → DD/MM/YYYY để hiển thị */
+function _pndDisp(ymd) {
+  if (!ymd) return '?';
+  var p = ymd.split('-');
+  return p.length === 3 ? p[2]+'/'+p[1]+'/'+p[0] : ymd;
+}
+
+/**
+ * Bước 1, 2, 4 (và reset): bấm nút → gọi GAS set_workflow.
+ * @param {string} id       - Content ID
+ * @param {string} newState - 'gro_requested' | 'gro_done' | 'completed' | ''
+ */
+function doWf(id, newState) {
+  var user = ((document.getElementById('user-name')||{}).value||'').trim() || 'Dashboard';
+  _callWfApi(id, newState, '', user);
+}
+
+/**
+ * Bước 3: "Đã cập nhật nội dung" — prompt nhập hạn mới → gọi GAS set_workflow state=upd_done.
+ * @param {string} id - Content ID
+ */
+function doWfDate(id) {
+  var link    = LINKS.find(function(l) { return l.id === id; });
+  var curDisp = link && link.expiry_date ? _pndDisp(link.expiry_date) : '';
+
+  var input = window.prompt(
+    '📝 Xác nhận đã cập nhật nội dung cho:\n' + id
+    + (curDisp ? '\n\nHạn hiện tại: ' + curDisp : '')
+    + '\n\nNhập ngày hết hạn mới cho ads (DD/MM/YYYY):',
+    curDisp
+  );
+  if (input === null) return;
+  input = input.trim();
+  if (!input) { alert('Vui lòng nhập ngày hết hạn mới.'); return; }
+
+  var m = input.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!m) { alert('Định dạng không đúng.\nNhập theo dạng DD/MM/YYYY — ví dụ: 31/08/2026'); return; }
+
+  var dd=m[1].padStart(2,'0'), mm2=m[2].padStart(2,'0'), yyyy=m[3];
+  var date = yyyy+'-'+mm2+'-'+dd;  // YYYY-MM-DD
+
+  var user = ((document.getElementById('user-name')||{}).value||'').trim() || 'Dashboard';
+  _callWfApi(id, 'upd_done', date, user);
+}
+
+/**
+ * Gọi GAS set_workflow, cập nhật LINKS local, rerender row.
+ */
+function _callWfApi(id, newState, note, user) {
+  // Disable tất cả nút trong row
+  var rowEl = document.querySelector('tr[data-lid="' + id + '"]');
+  var btns  = rowEl ? rowEl.querySelectorAll('.btn-wf') : [];
+  btns.forEach(function(b) { b.disabled = true; b.textContent = '⟳'; });
+
+  var url = SHEET_API
+    + '?action=set_workflow'
+    + '&id='    + encodeURIComponent(id)
+    + '&state=' + encodeURIComponent(newState)
+    + '&user='  + encodeURIComponent(user)
+    + (note ? '&note=' + encodeURIComponent(note) : '')
+    + '&t='     + Date.now();
+
+  fetch(url, { credentials: 'omit', mode: 'cors' })
+    .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(function(data) {
+      if (data.ok) {
+        // Cập nhật LINKS local
+        var link = LINKS.find(function(l) { return l.id === id; });
+        if (link) {
+          link.workflow_state = newState;
+          if (note) link.pending_new_date = note;
+          // Bước 4 hoàn thành: cập nhật expiry_date hiển thị
+          if (newState === 'completed' && link.pending_new_date) {
+            link.expiry_date      = link.pending_new_date;
+            link.workflow_state   = '';
+            link.pending_new_date = '';
+          }
+          // Rerender đúng row đó (không rebuild toàn bảng)
+          if (rowEl) {
+            var tmp = document.createElement('tbody');
+            tmp.innerHTML = rowHtml(link);
+            rowEl.replaceWith(tmp.firstElementChild);
+          }
+        }
+      } else {
+        // Khôi phục nút
+        btns.forEach(function(b) { b.disabled = false; });
+        alert('Lỗi: ' + (data.error || 'Không xác định'));
+      }
+    })
+    .catch(function(err) {
+      btns.forEach(function(b) { b.disabled = false; });
+      alert('Lỗi kết nối: ' + err.message);
+    });
+}
+// ──────────────────────────────────────────────────────────────────────────────
+
+// Hook vào processSheetRows để bắt đầu đếm sau mỗi lần load thành công
+const _origProcessSheetRows = processSheetRows;
+processSheetRows = function(data) {
+  _origProcessSheetRows(data);
+  updateTabCounts();
+  const statusEl = document.getElementById('sync-status');
+  if (statusEl) {
+    statusEl.dataset.ok = '1';
+    statusEl.dataset.base = statusEl.textContent;
+  }
+  startCountdown();
+};
+</script>
+</body>
+</html>
