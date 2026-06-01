@@ -3642,11 +3642,14 @@ function _callWfApi(id, newState, note, user, postUrl) {
             link.workflow_state   = '';
             link.pending_new_date = '';
           }
-          // Rerender đúng row đó (không rebuild toàn bảng)
-          if (rowEl) {
+          // Re-query sau async (rowEl cũ có thể bị stale do auto-refresh)
+          var freshRow = document.querySelector('tr[data-lid="' + id + '"]');
+          if (freshRow) {
             var tmp = document.createElement('tbody');
             tmp.innerHTML = rowHtml(link);
-            rowEl.replaceWith(tmp.firstElementChild);
+            freshRow.replaceWith(tmp.firstElementChild);
+          } else {
+            render();  // fallback: full re-render
           }
         }
       } else {
