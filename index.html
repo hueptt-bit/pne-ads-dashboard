@@ -3570,9 +3570,27 @@ function doWf(id, newState) {
   var user = ((document.getElementById('user-name')||{}).value||'').trim() || 'Dashboard';
   var link = LINKS.find(function(l) { return l.id === id; });
   var postUrl = link ? (link.url || '') : '';
-  // Bước 4: truyền pending_new_date làm fallback nếu col N trống trong Sheet
-  var noteVal = (newState === 'completed' && link && link.pending_new_date) ? link.pending_new_date : '';
-  _callWfApi(id, newState, noteVal, user, postUrl);
+
+  // Bước 4: xác nhận ngày trước khi submit — ngày lấy từ bước 3, không hỏi lại
+  if (newState === 'completed') {
+    var pnd = link ? (link.pending_new_date || '') : '';
+    if (!pnd) {
+      alert(
+        '⚠️ Chưa tìm thấy ngày hạn mới cho:\n' + id +
+        '\n\nCó thể do:\n' +
+        '• Bước 3 "Đã cập nhật nội dung" chưa hoàn thành\n' +
+        '• Trang đã được tải lại sau bước 3\n\n' +
+        'Hãy thực hiện bước 3 trước, hoặc tải lại trang nếu đã làm ở trình duyệt khác.'
+      );
+      return;
+    }
+    var disp = _pndDisp(pnd);
+    if (!window.confirm('✅ Xác nhận đã set ads:\n' + id + '\n\nHạn mới sẽ ghi vào Sheet: ' + disp + '\n\nTiếp tục?')) return;
+    _callWfApi(id, 'completed', pnd, user, postUrl);
+    return;
+  }
+
+  _callWfApi(id, newState, '', user, postUrl);
 }
 
 /**
