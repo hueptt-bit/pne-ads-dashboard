@@ -3570,7 +3570,9 @@ function doWf(id, newState) {
   var user = ((document.getElementById('user-name')||{}).value||'').trim() || 'Dashboard';
   var link = LINKS.find(function(l) { return l.id === id; });
   var postUrl = link ? (link.url || '') : '';
-  _callWfApi(id, newState, '', user, postUrl);
+  // Bước 4: truyền pending_new_date làm fallback nếu col N trống trong Sheet
+  var noteVal = (newState === 'completed' && link && link.pending_new_date) ? link.pending_new_date : '';
+  _callWfApi(id, newState, noteVal, user, postUrl);
 }
 
 /**
