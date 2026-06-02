@@ -6,158 +6,185 @@
 <title>Ads Link Tracker — PNE</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, Arial, sans-serif; font-size: 14px; background: #f5f4f1; color: #1a1a18; }
-.top-bar { background: #fff; border-bottom: 1px solid #e0dfd8; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
-.top-bar h1 { font-size: 16px; font-weight: 600; }
-.top-bar .meta { font-size: 12px; color: #6b6a65; }
-.content { padding: 20px 24px; }
+body { font-family: -apple-system, 'Inter', Arial, sans-serif; font-size: 14px; background: #f0f2f6; color: #111827; }
 
-.program-tabs { display: flex; gap: 6px; margin-bottom: 18px; flex-wrap: wrap; }
-.ptab { padding: 8px 18px; border-radius: 10px; border: 1px solid #d0cfc8; background: #fff; cursor: pointer; font-size: 13px; font-weight: 500; color: #5f5e5a; display: flex; align-items: center; gap: 7px; transition: all .12s; }
-.ptab .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.ptab:hover:not(.active) { background: #f0efe8; }
-.ptab.active { color: #fff; border-color: transparent; }
-.ptab[data-p="all"]              .dot { background: #888; }
-.ptab[data-p="Du học nghề Đức"]  .dot { background: #1d4ed8; }
+/* ── Top bar ─────────────────────────────────────────────────────────────── */
+.top-bar { background: #fff; border-bottom: none; box-shadow: 0 1px 4px rgba(0,0,0,.08); padding: 12px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+.top-bar h1 { font-size: 15px; font-weight: 700; color: #111827; letter-spacing: -.2px; }
+.top-bar .meta { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+.content { padding: 20px 28px; }
+
+/* ── Program tabs ────────────────────────────────────────────────────────── */
+.program-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.ptab { padding: 7px 16px; border-radius: 99px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer; font-size: 12px; font-weight: 500; color: #6b7280; display: flex; align-items: center; gap: 6px; transition: all .15s; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+.ptab .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.ptab:hover:not(.active) { border-color: #d1d5db; background: #f9fafb; }
+.ptab.active { color: #fff; border-color: transparent; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+.ptab[data-p="all"]              .dot { background: #6b7280; }
+.ptab[data-p="Du học nghề Đức"]  .dot { background: #2563eb; }
 .ptab[data-p="Du học Đức"]       .dot { background: #0284c7; }
 .ptab[data-p="CDVBA"]            .dot { background: #7c3aed; }
-.ptab[data-p="Tiếng"]            .dot { background: #0f766e; }
+.ptab[data-p="Tiếng"]            .dot { background: #0d9488; }
 .ptab[data-p="Kỳ thi OSD"]       .dot { background: #d97706; }
 .ptab[data-p="Du học Hàn Quốc"]  .dot { background: #dc2626; }
 .ptab[data-p="Khác"]             .dot { background: #64748b; }
-.ptab[data-p="all"].active             { background: #111; }
-.ptab[data-p="Du học nghề Đức"].active { background: #1d4ed8; }
+.ptab[data-p="all"].active             { background: #111827; }
+.ptab[data-p="Du học nghề Đức"].active { background: #2563eb; }
 .ptab[data-p="Du học Đức"].active      { background: #0284c7; }
 .ptab[data-p="CDVBA"].active           { background: #7c3aed; }
-.ptab[data-p="Tiếng"].active           { background: #0f766e; }
+.ptab[data-p="Tiếng"].active           { background: #0d9488; }
 .ptab[data-p="Kỳ thi OSD"].active      { background: #d97706; }
 .ptab[data-p="Du học Hàn Quốc"].active { background: #dc2626; }
 .ptab[data-p="Khác"].active            { background: #64748b; }
-.ptab.active .dot { background: rgba(255,255,255,.55); }
-.ptab .cnt { font-size: 11px; background: rgba(0,0,0,.08); border-radius: 4px; padding: 1px 6px; }
-.ptab.active .cnt { background: rgba(255,255,255,.2); }
+.ptab.active .dot { background: rgba(255,255,255,.6); }
+.ptab .cnt { font-size: 10px; background: rgba(0,0,0,.09); border-radius: 99px; padding: 1px 7px; }
+.ptab.active .cnt { background: rgba(255,255,255,.22); }
 
-.cards { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 18px; }
-.card { background: #fff; border: 1px solid #e0dfd8; border-radius: 10px; padding: 13px 16px; }
-.card-label { font-size: 10px; color: #6b6a65; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
-.card-value { font-size: 26px; font-weight: 600; }
-.card.red   .card-value { color: #b91c1c; }
-.card.amber .card-value { color: #92400e; }
-.card.green .card-value { color: #166534; }
-.card.blue  .card-value { color: #1d4ed8; }
+/* ── Metric cards ────────────────────────────────────────────────────────── */
+.cards { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 16px; }
+.card { background: #fff; border: none; border-radius: 14px; padding: 16px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.07); position: relative; overflow: hidden; }
+.card::after { content:''; position:absolute; top:0; left:0; right:0; height:3px; border-radius:14px 14px 0 0; }
+.card.red::after  { background: #ef4444; }
+.card.amber::after{ background: #f59e0b; }
+.card.green::after{ background: #22c55e; }
+.card.blue::after { background: #3b82f6; }
+.card-label { font-size: 10px; color: #9ca3af; text-transform: uppercase; letter-spacing: .6px; margin-bottom: 6px; font-weight: 600; }
+.card-value { font-size: 32px; font-weight: 700; line-height: 1; }
+.card.red   .card-value { color: #dc2626; }
+.card.amber .card-value { color: #d97706; }
+.card.green .card-value { color: #16a34a; }
+.card.blue  .card-value { color: #2563eb; }
 
-.filters { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
-.tab-group { display: flex; gap: 3px; }
-.tab { padding: 5px 12px; border-radius: 7px; border: 1px solid #d0cfc8; background: #fff; cursor: pointer; font-size: 12px; color: #5f5e5a; }
-.tab.active { background: #111; color: #fff; border-color: #111; }
-.tab:hover:not(.active) { background: #f0efe8; }
-.tab-wf { border-color: #d97706; color: #92400e; background: #fffbeb; }
-.tab-wf.active { background: #d97706; color: #fff; border-color: #d97706; }
-.tab-wf:hover:not(.active) { background: #fef3c7; }
-.tab-wf #cnt-wf { background: #fde68a; color: #92400e; border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 700; margin-left: 3px; }
-.tab-wf.active #cnt-wf { background: rgba(255,255,255,.25); color: #fff; }
+/* ── Filter bar ──────────────────────────────────────────────────────────── */
+.filters { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+.tab-group { display: flex; gap: 2px; background: #e5e7eb; border-radius: 10px; padding: 3px; }
+.tab { padding: 5px 13px; border-radius: 7px; border: none; background: transparent; cursor: pointer; font-size: 12px; color: #6b7280; font-weight: 500; transition: all .12s; }
+.tab.active { background: #fff; color: #111827; font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.tab:hover:not(.active) { color: #374151; }
+.tab-wf { background: #fef3c7; color: #92400e; border-radius: 99px !important; padding: 5px 14px !important; border: 1.5px solid #fde68a !important; font-weight: 600; }
+.tab-wf.active { background: #f59e0b !important; color: #fff !important; border-color: #f59e0b !important; box-shadow: 0 2px 6px rgba(245,158,11,.35) !important; }
+.tab-wf:hover:not(.active) { background: #fef3c7 !important; }
+.tab-wf #cnt-wf { background: rgba(0,0,0,.12); color: inherit; border-radius: 99px; padding: 1px 7px; font-size: 11px; font-weight: 700; margin-left: 4px; }
+.tab-wf.active #cnt-wf { background: rgba(255,255,255,.3); }
 
 /* ── Workflow Kanban Board ────────────────────────────────────────────────── */
 .wf-board { display:none; }
-.wf-board-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; padding-top:4px; }
-.wf-board-hdr h2 { font-size:15px; font-weight:600; color:#1a1a18; }
-.wf-board-total { font-size:12px; color:#6b6a65; }
-.wf-pipeline { display:flex; gap:14px; align-items:flex-start; overflow-x:auto; padding-bottom:12px; }
-.wf-stage { flex:1; min-width:260px; background:#f8f7f4; border-radius:12px; border:1px solid #e0dfd8; overflow:hidden; }
-.wf-stage-hdr { padding:10px 14px 9px; font-size:12px; font-weight:600; display:flex; align-items:center; justify-content:space-between; }
-.wf-stage-cnt { border-radius:5px; padding:2px 9px; font-size:11px; font-weight:700; }
-.wf-stage.s0 .wf-stage-hdr { background:#fee2e2; color:#991b1b; border-bottom:1px solid #fca5a5; }
-.wf-stage.s0 .wf-stage-cnt { background:#fca5a5; color:#991b1b; }
-.wf-stage.s1 .wf-stage-hdr { background:#fef3c7; color:#92400e; border-bottom:1px solid #fde68a; }
-.wf-stage.s1 .wf-stage-cnt { background:#fde68a; color:#92400e; }
-.wf-stage.s2 .wf-stage-hdr { background:#dbeafe; color:#1e40af; border-bottom:1px solid #bfdbfe; }
-.wf-stage.s2 .wf-stage-cnt { background:#bfdbfe; color:#1e40af; }
-.wf-stage.s3 .wf-stage-hdr { background:#d1fae5; color:#065f46; border-bottom:1px solid #a7f3d0; }
-.wf-stage.s3 .wf-stage-cnt { background:#a7f3d0; color:#065f46; }
-.wf-cards-wrap { padding:10px; display:flex; flex-direction:column; gap:8px; min-height:60px; }
-.wf-card { background:#fff; border:1px solid #e0dfd8; border-radius:8px; padding:11px 12px; }
-.wf-card-id { font-size:11px; font-weight:600; color:#1a1a18; word-break:break-all; margin-bottom:3px; }
-.wf-card-meta { font-size:11px; color:#6b6a65; margin-bottom:5px; }
-.wf-card-exp { font-size:11px; margin-bottom:6px; }
-.wf-card-link { font-size:10px; color:#3b82f6; text-decoration:none; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-bottom:8px; }
+.wf-board-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; padding-top:2px; }
+.wf-board-hdr h2 { font-size:15px; font-weight:700; color:#111827; }
+.wf-board-total { font-size:12px; color:#9ca3af; background:#fff; padding:4px 12px; border-radius:99px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+.wf-pipeline { display:flex; gap:14px; align-items:flex-start; overflow-x:auto; padding-bottom:14px; }
+.wf-stage { flex:1; min-width:270px; background:#fff; border-radius:14px; border:none; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+.wf-stage-hdr { padding:11px 15px 10px; font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:space-between; }
+.wf-stage-cnt { border-radius:99px; padding:2px 10px; font-size:11px; font-weight:700; }
+.wf-stage.s0 .wf-stage-hdr { background:#fef2f2; color:#991b1b; border-bottom:1px solid #fee2e2; }
+.wf-stage.s0 .wf-stage-cnt { background:#fee2e2; color:#dc2626; }
+.wf-stage.s1 .wf-stage-hdr { background:#fffbeb; color:#92400e; border-bottom:1px solid #fde68a; }
+.wf-stage.s1 .wf-stage-cnt { background:#fef3c7; color:#b45309; }
+.wf-stage.s2 .wf-stage-hdr { background:#eff6ff; color:#1e40af; border-bottom:1px solid #dbeafe; }
+.wf-stage.s2 .wf-stage-cnt { background:#dbeafe; color:#1d4ed8; }
+.wf-stage.s3 .wf-stage-hdr { background:#f0fdf4; color:#166534; border-bottom:1px solid #dcfce7; }
+.wf-stage.s3 .wf-stage-cnt { background:#dcfce7; color:#16a34a; }
+.wf-cards-wrap { padding:10px; display:flex; flex-direction:column; gap:8px; min-height:70px; }
+.wf-card { background:#fff; border:1px solid #f3f4f6; border-radius:10px; padding:12px 13px; box-shadow:0 1px 3px rgba(0,0,0,.06); transition: box-shadow .15s; }
+.wf-card:hover { box-shadow:0 3px 8px rgba(0,0,0,.1); }
+.wf-card-id { font-size:11px; font-weight:700; color:#111827; word-break:break-all; margin-bottom:3px; }
+.wf-card-meta { font-size:11px; color:#6b7280; margin-bottom:5px; }
+.wf-card-exp { font-size:11px; margin-bottom:6px; display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
+.wf-card-link { font-size:10px; color:#3b82f6; text-decoration:none; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-bottom:9px; }
 .wf-card-link:hover { text-decoration:underline; }
 .wf-card-actions { display:flex; gap:5px; flex-wrap:wrap; }
-.wf-empty { color:#bbb; font-size:11px; text-align:center; padding:18px 0; }
-select, input { padding: 5px 10px; border-radius: 7px; border: 1px solid #d0cfc8; background: #fff; font-size: 12px; color: #1a1a18; outline: none; }
+.wf-empty { color:#d1d5db; font-size:12px; text-align:center; padding:24px 0; }
+
+select, input { padding: 5px 10px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; font-size: 12px; color: #111827; outline: none; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
 input { width: 170px; }
-input:focus { border-color: #888; }
-.count { font-size: 12px; color: #6b6a65; margin-left: auto; }
+input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
+.count { font-size: 12px; color: #9ca3af; margin-left: auto; }
 
-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; border: 1px solid #e0dfd8; overflow: hidden; }
-thead { background: #f5f4f1; }
-th { padding: 9px 12px; text-align: left; font-size: 11px; font-weight: 600; color: #6b6a65; border-bottom: 1px solid #e0dfd8; white-space: nowrap; }
-td { padding: 8px 12px; border-bottom: 1px solid #f4f3f0; font-size: 12px; vertical-align: middle; max-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* ── Table ───────────────────────────────────────────────────────────────── */
+table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 14px; border: none; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+thead { background: #f9fafb; }
+th { padding: 10px 12px; text-align: left; font-size: 10px; font-weight: 700; color: #9ca3af; border-bottom: 1px solid #f3f4f6; white-space: nowrap; letter-spacing: .4px; text-transform: uppercase; }
+td { padding: 9px 12px; border-bottom: 1px solid #f9fafb; font-size: 12px; vertical-align: middle; max-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 tr:last-child td { border-bottom: none; }
-tr:hover td { background: rgba(0,0,0,.025); }
+tr:hover td { background: rgba(99,102,241,.03); }
+/* Row urgency accent via left border on first td */
+tr.row-het  td:first-child { border-left: 3px solid #ef4444; }
+tr.row-gia  td:first-child { border-left: 3px solid #f97316; }
+tr.row-sap  td:first-child { border-left: 3px solid #eab308; }
+tr.row-het td { background: rgba(239,68,68,.025); }
+tr.row-gia td { background: rgba(249,115,22,.025); }
+tr.row-sap td { background: rgba(234,179,8,.025); }
+tr.row-het:hover td { background: rgba(239,68,68,.05); }
+tr.row-gia:hover td { background: rgba(249,115,22,.05); }
+tr.row-sap:hover td { background: rgba(234,179,8,.05); }
 
-.badge { display: inline-block; padding: 2px 8px; border-radius: 5px; font-size: 10px; font-weight: 600; white-space: nowrap; }
-.b-het      { background: #fee2e2; color: #991b1b; }
-.b-sap      { background: #fef3c7; color: #92400e; }
-.b-gia-han  { background: #ffedd5; color: #9a3412; border: 1px solid #fdba74; }
-.b-ok       { background: #dcfce7; color: #166534; }
-.b-always   { background: #dbeafe; color: #1e40af; }
-.b-off      { background: #f3f4f6; color: #6b7280; }
-.b-da-ngung { background: #f1f5f9; color: #64748b; }
+/* ── Badges ──────────────────────────────────────────────────────────────── */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.b-het      { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.b-sap      { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+.b-gia-han  { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+.b-ok       { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+.b-always   { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+.b-off      { background: #f9fafb; color: #9ca3af; border: 1px solid #e5e7eb; }
+.b-da-ngung { background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0; }
+.b-dhd    { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.b-dhdd   { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+.b-ao     { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+.b-tieng  { background: #f0fdfa; color: #0d9488; border: 1px solid #99f6e4; }
+.b-osd    { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+.b-dhk    { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.b-khac   { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+.b-lang-duc   { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.b-lang-phap  { background: #f5f3ff; color: #6d28d9; border: 1px solid #ddd6fe; }
+.b-lang-han   { background: #fdf2f8; color: #9d174d; border: 1px solid #fbcfe8; }
+.b-lang-thai  { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+.b-lang-tbn   { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+.b-lang-trung { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+.b-lang-nhat  { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.b-lang-other { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; }
+.b-page   { background: #f9fafb; color: #6b7280; border: 1px solid #e5e7eb; font-size: 10px; }
+
+a { color: #2563eb; text-decoration: none; font-size: 11px; }
+a:hover { text-decoration: underline; }
+.days { font-weight: 700; text-align: right; white-space: nowrap; }
+.days.neg    { color: #dc2626; }
+.days.urg    { color: #c2410c; }
+.days.warn   { color: #c2410c; }
+.days.fine   { color: #16a34a; }
+.days.always { color: #2563eb; }
+.empty { text-align: center; padding: 40px; color: #9ca3af; font-size: 13px; }
+.note-cell { font-size: 11px; color: #d1d5db; font-style: italic; }
+footer { padding: 14px 28px; font-size: 11px; color: #9ca3af; border-top: 1px solid #f3f4f6; margin-top: 4px; }
+.btn-save { padding:5px 14px; border-radius:8px; border:1px solid #e5e7eb; background:#fff; font-size:11px; font-weight:600; color:#2563eb; cursor:pointer; transition:all .12s; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,.05); }
+.btn-save:hover:not(.saving) { background:#eff6ff; border-color:#bfdbfe; box-shadow:0 2px 4px rgba(37,99,235,.15); }
+.btn-save.saving { color:#9ca3af; cursor:default; }
+.wf-cell  { display:flex; flex-direction:column; gap:3px; }
+.wf-tag   { font-size:10px; color:#9ca3af; font-style:italic; white-space:nowrap; }
+.btn-wf   { padding:5px 12px; border-radius:8px; border:1.5px solid; font-size:10px; font-weight:700; cursor:pointer; white-space:nowrap; transition:all .15s; letter-spacing:.1px; }
+.btn-wf:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,.18); filter:brightness(1.05); }
+.btn-wf:active:not(:disabled) { transform:translateY(0); box-shadow:none; }
+.btn-wf:disabled { opacity:.4; cursor:default; }
+/* Bước 1 — outline cam vừa, không chói */
+.btn-wf-1 { background:#fff; color:#c2410c; border-color:#f97316; }
+/* Bước 2, 3, 4 — outline với màu riêng */
+.btn-wf-2 { background:#fff; color:#15803d; border-color:#86efac; }
+.btn-wf-3 { background:#fff; color:#1d4ed8; border-color:#93c5fd; }
+.btn-wf-4 { background:#fff; color:#6d28d9; border-color:#c4b5fd; }
+.btn-wf-r { background:#f9fafb; color:#9ca3af; border-color:#e5e7eb; font-size:9px; font-weight:600; }
+/* Ngừng chạy — nhẹ nhàng, không gây chú ý quá */
+.btn-wf-stop { background:#fff; color:#6b7280; border-color:#d1d5db; }
+.wf-done  { font-size:10px; color:#16a34a; font-weight:700; }
 .type-tag   { display:inline-block; font-size:9px; font-weight:600; padding:1px 5px; border-radius:3px; margin-top:2px; white-space:nowrap; }
 .type-ngung { background:#f1f5f9; color:#94a3b8; border:1px solid #e2e8f0; }
 .type-giahan{ background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; }
 .toggle-renewal { cursor:pointer; user-select:none; }
 .toggle-renewal:hover { opacity:.75; }
 .btn-renewal { display:inline-flex; align-items:center; gap:3px; padding:3px 8px; border-radius:5px; border:1px solid; font-size:10px; font-weight:600; cursor:default; white-space:nowrap; background:#fff; user-select:none; }
-.btn-renewal:hover { opacity:1; }
 .btn-renewal.is-renewal  { border-color:#fdba74; color:#c2410c; background:#fff7ed; }
 .btn-renewal.no-renewal  { border-color:#e2e8f0; color:#94a3b8; background:#f8fafc; }
 .btn-renewal.is-always   { border-color:#bfdbfe; color:#1d4ed8; background:#eff6ff; }
-.b-dhd    { background: #dbeafe; color: #1e40af; }
-.b-dhdd   { background: #e0f2fe; color: #0369a1; }
-.b-ao     { background: #ede9fe; color: #6d28d9; }
-.b-tieng  { background: #ccfbf1; color: #0f766e; }
-.b-osd    { background: #fef3c7; color: #92400e; }
-.b-dhk    { background: #fee2e2; color: #991b1b; }
-.b-khac   { background: #f1f5f9; color: #475569; }
-/* Per-language badge colors */
-.b-lang-duc   { background: #dbeafe; color: #1d4ed8; }
-.b-lang-phap  { background: #ede9fe; color: #6d28d9; }
-.b-lang-han   { background: #fce7f3; color: #9d174d; }
-.b-lang-thai  { background: #fef3c7; color: #92400e; }
-.b-lang-tbn   { background: #ffedd5; color: #9a3412; }
-.b-lang-trung { background: #fee2e2; color: #991b1b; }
-.b-lang-nhat  { background: #dcfce7; color: #166534; }
-.b-lang-other { background: #f1f5f9; color: #475569; }
-.b-page   { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; font-size: 10px; }
-
-a { color: #1d4ed8; text-decoration: none; font-size: 11px; }
-a:hover { text-decoration: underline; }
-.days { font-weight: 600; text-align: right; white-space: nowrap; }
-.days.neg    { color: #b91c1c; }
-.days.urg    { color: #92400e; }
-.days.warn   { color: #9a3412; }
-.days.fine   { color: #166534; }
-.days.always { color: #1d4ed8; }
-.empty { text-align: center; padding: 40px; color: #6b6a65; font-size: 13px; }
-.note-cell { font-size: 11px; color: #9f9e99; font-style: italic; }
-footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px solid #e0dfd8; margin-top: 4px; }
-.btn-save { padding:4px 12px; border-radius:6px; border:1px solid #d0cfc8; background:#fff; font-size:11px; font-weight:600; color:#1d4ed8; cursor:pointer; transition:all .12s; white-space:nowrap; }
-.btn-save:hover:not(.saving) { background:#eff6ff; border-color:#93c5fd; }
-.btn-save.saving { color:#6b7280; cursor:default; }
-.wf-cell  { display:flex; flex-direction:column; gap:3px; }
-.wf-tag   { font-size:10px; color:#6b6a65; font-style:italic; white-space:nowrap; }
-.btn-wf   { padding:3px 8px; border-radius:5px; border:1px solid; font-size:10px; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .12s; }
-.btn-wf:hover:not(:disabled) { opacity:.85; }
-.btn-wf:disabled { opacity:.45; cursor:default; }
-.btn-wf-1 { background:#fff7ed; color:#c2410c; border-color:#fed7aa; }  /* yêu cầu gỡ - cam */
-.btn-wf-2 { background:#f0fdf4; color:#166534; border-color:#86efac; }  /* đã gỡ xong - xanh lá */
-.btn-wf-3 { background:#eff6ff; color:#1d4ed8; border-color:#93c5fd; }  /* đã cập nhật - xanh dương */
-.btn-wf-4 { background:#f5f3ff; color:#6d28d9; border-color:#c4b5fd; }  /* đã set ads - tím */
-.btn-wf-r { background:#f8fafc; color:#64748b; border-color:#e2e8f0; font-size:9px; }  /* reset */
-.wf-done  { font-size:10px; color:#166534; font-weight:600; }
-.input-user { width:90px; padding:4px 8px; border-radius:6px; border:1px solid #d0cfc8; background:#fff; font-size:12px; color:#1a1a18; outline:none; }
-.input-user:focus { border-color:#93c5fd; }
+.input-user { width:90px; padding:4px 8px; border-radius:7px; border:1px solid #e5e7eb; background:#fff; font-size:12px; color:#111827; outline:none; box-shadow:0 1px 2px rgba(0,0,0,.04); }
+.input-user:focus { border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,.1); }
 </style>
 </head>
 <body>
@@ -220,7 +247,11 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
       <option value="all">Tất cả phụ trách</option>
       <option>Ngọc</option><option>Dương</option><option>Hà</option><option>Tiên</option>
     </select>
-    <input id="q" type="text" placeholder="Tìm link, mục...">
+    <div style="position:relative;display:inline-flex;align-items:center">
+      <input id="q" type="text" placeholder="Tìm link, mục..." style="padding-right:26px">
+      <button id="btn-clear-q" onclick="clearSearch()" title="Xóa tìm kiếm"
+        style="display:none;position:absolute;right:7px;background:none;border:none;cursor:pointer;color:#9ca3af;font-size:14px;line-height:1;padding:0">✕</button>
+    </div>
     <span class="count" id="cnt-badge"></span>
   </div>
 
@@ -293,7 +324,7 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
 
 <script>
 let DB_UPDATED = "2026-05-30";
-const DB_UPDATED_TIME = "14:25";
+const DB_UPDATED_TIME = "14:55";
 const LINKS = [
   {
     "id": "CDVBA_Album_DangKyTDChung_0525_3185",
@@ -3253,15 +3284,12 @@ function rowHtml(l) {
     }
   }
   const shortUrl=l.url.replace(/https?:\/\/(www\.)?facebook\.com\//,'fb/');
-  // ── Màu nền row theo mức khẩn cấp ──
-  const rowBg = st==='HẾT HẠN' ? 'background:#fff5f5' :
-                st==='GIA HẠN' ? 'background:#fff8f0' :
-                st==='SẮP HẾT'? 'background:#fefce8' : '';
-  // ── Cột Hành động: workflow 4 bước (chỉ với link cần gia hạn + active + sắp/đã hết) ──
+  // ── Class row theo mức khẩn cấp ──
+  const rowCls = st==='HẾT HẠN' ? 'row-het' : st==='GIA HẠN' ? 'row-gia' : st==='SẮP HẾT' ? 'row-sap' : '';
+  // ── Cột Hành động: workflow 4 bước (tất cả link đang active, trừ Đã ngừng) ──
   const safeId = l.id.replace(/'/g, "\\'");
   let actionCell = '<td></td>';
-  const URGENT = ['HẾT HẠN','GIA HẠN','SẮP HẾT'];
-  if (l.needs_renewal && l.active && URGENT.includes(st)) {
+  if (l.active && st !== 'ĐÃ NGỪNG') {
     const ws  = l.workflow_state || '';
     const pnd = l.pending_new_date || '';   // hạn mới đã nhập ở bước 3, chờ B xác nhận
     let inner = '';
@@ -3281,9 +3309,10 @@ function rowHtml(l) {
       inner = `<span class="wf-done">✅ Hoàn thành</span>`
             + `<button class="btn-wf btn-wf-r" onclick="doWf('${safeId}','')">↺ Reset</button>`;
     }
-    actionCell = `<td><div class="wf-cell">${inner}</div></td>`;
+    const stopBtn = `<button class="btn-wf btn-wf-stop" onclick="doStop('${safeId}')" title="Đánh dấu ngừng chạy">⏹ Ngừng</button>`;
+    actionCell = `<td><div class="wf-cell" style="flex-direction:row;gap:5px;flex-wrap:wrap">${inner}${stopBtn}</div></td>`;
   }
-  return `<tr data-lid="${l.id}" style="${rowBg}">
+  return `<tr data-lid="${l.id}"${rowCls?' class="'+rowCls+'"':''}>
     <td><span class="badge ${pb}">${progLabel}</span></td>
     <td title="${l.section}" style="white-space:normal;word-break:break-all;max-width:180px">${l.section}</td>
     <td>${chCell}</td>
@@ -3374,7 +3403,10 @@ document.getElementById('prog-tabs').addEventListener('click', function(e) {
   if (!t) return;
   document.querySelectorAll('.ptab').forEach(x=>x.classList.remove('active'));
   t.classList.add('active'); aP=t.dataset.p;
-  document.getElementById('lang-sel').style.display = (aP==='Tiếng'||aP==='all')?'':'none';
+  // Reset bộ lọc ngôn ngữ khi chuyển sang tab không phải "Tiếng"
+  const langSel = document.getElementById('lang-sel');
+  if (aP !== 'Tiếng' && aP !== 'all') { aLang='all'; if(langSel) langSel.value='all'; }
+  langSel.style.display = (aP==='Tiếng'||aP==='all')?'':'none';
   if (document.getElementById('wf-board').style.display === 'block') {
     renderWorkflowBoard();
   } else {
@@ -3444,6 +3476,7 @@ function renderWorkflowBoard() {
       actionBtn = `<button class="btn-wf btn-wf-4" onclick="doWf('${safeId}','completed')">✅ Đã set ads</button>`;
     const resetBtn = l.workflow_state
       ? `<button class="btn-wf btn-wf-r" onclick="doWf('${safeId}','')">↺ Reset</button>` : '';
+    const stopBtnCard = `<button class="btn-wf btn-wf-stop" onclick="doStop('${safeId}')">⏹ Ngừng</button>`;
     return `<div class="wf-card" data-lid="${l.id}">
       <div class="wf-card-id">${l.section || l.id}</div>
       <div class="wf-card-meta">${l.program||'—'} · ${l.page||l.channel||'—'} · ${l.person||'—'}</div>
@@ -3454,6 +3487,7 @@ function renderWorkflowBoard() {
       <div class="wf-card-actions">
         ${actionBtn}
         ${resetBtn}
+        ${stopBtnCard}
       </div>
     </div>`;
   }
@@ -3497,7 +3531,18 @@ function renderActive() {
 }
 document.getElementById('lang-sel').addEventListener('change',e=>{aLang=e.target.value;renderActive();});
 document.getElementById('person-sel').addEventListener('change',e=>{aPerson=e.target.value;renderActive();});
-document.getElementById('q').addEventListener('input',e=>{q=e.target.value.trim().toLowerCase();render();});
+document.getElementById('q').addEventListener('input',e=>{
+  q=e.target.value.trim().toLowerCase();
+  document.getElementById('btn-clear-q').style.display = q ? 'block' : 'none';
+  renderActive();
+});
+function clearSearch() {
+  var el = document.getElementById('q');
+  el.value = ''; q = '';
+  document.getElementById('btn-clear-q').style.display = 'none';
+  el.focus();
+  renderActive();
+}
 
 // Toggle Loại — cập nhật đúng row, không sort lại toàn bảng
 function toggleRenewal(id) {
@@ -3831,6 +3876,30 @@ function doWf(id, newState) {
  * Bước 3: "Đã cập nhật nội dung" — prompt nhập hạn mới → gọi GAS set_workflow state=upd_done.
  * @param {string} id - Content ID
  */
+function doStop(id) {
+  var link = LINKS.find(function(l) { return l.id === id; });
+  if (!window.confirm('⏹ Xác nhận đánh dấu NGỪNG CHẠY:\n' + id + '\n\nLink sẽ bị ẩn khỏi danh sách đang chạy. Tiếp tục?')) return;
+  var user = _getUser();
+  var url = SHEET_API
+    + '?action=stop_link'
+    + '&id=' + encodeURIComponent(id)
+    + '&user=' + encodeURIComponent(user)
+    + '&t=' + Date.now();
+  fetch(url, { credentials: 'omit', mode: 'cors' })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.ok) {
+        // Cập nhật local: đánh dấu inactive
+        if (link) { link.active = false; }
+        if (document.getElementById('wf-board').style.display === 'block') renderWorkflowBoard();
+        else render();
+      } else {
+        alert('Lỗi: ' + (data.error || 'Không xác định'));
+      }
+    })
+    .catch(function(err) { alert('Lỗi kết nối: ' + err.message); });
+}
+
 function doWfDate(id) {
   var link    = LINKS.find(function(l) { return l.id === id; });
   var curDisp = link && link.expiry_date ? _pndDisp(link.expiry_date) : '';
@@ -3896,14 +3965,29 @@ function _callWfApi(id, newState, note, user, postUrl) {
             link.workflow_state   = '';
             link.pending_new_date = '';
           }
+          // Bước 1 từ bảng → tự chuyển sang kanban board
+          if (newState === 'gro_requested') {
+            document.querySelectorAll('.tab').forEach(function(x) { x.classList.remove('active'); });
+            var wfTab = document.querySelector('.tab[data-s="WORKFLOW"]');
+            if (wfTab) wfTab.classList.add('active');
+            aS = 'WORKFLOW';
+            document.getElementById('main-table-area').style.display = 'none';
+            document.getElementById('wf-board').style.display = 'block';
+            renderWorkflowBoard();
+            return;
+          }
           // Re-query sau async (rowEl cũ có thể bị stale do auto-refresh)
-          var freshRow = document.querySelector('tr[data-lid="' + id + '"]');
-          if (freshRow) {
-            var tmp = document.createElement('tbody');
-            tmp.innerHTML = rowHtml(link);
-            freshRow.replaceWith(tmp.firstElementChild);
+          if (document.getElementById('wf-board').style.display === 'block') {
+            renderWorkflowBoard();
           } else {
-            render();  // fallback: full re-render
+            var freshRow = document.querySelector('tr[data-lid="' + id + '"]');
+            if (freshRow) {
+              var tmp = document.createElement('tbody');
+              tmp.innerHTML = rowHtml(link);
+              freshRow.replaceWith(tmp.firstElementChild);
+            } else {
+              render();
+            }
           }
         }
       } else {
