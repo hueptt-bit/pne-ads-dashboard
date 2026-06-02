@@ -3142,15 +3142,16 @@ function rowHtml(l) {
   else if (l.program==='Kỳ thi OSD')      { pb='b-osd';  progLabel='Kỳ thi OSD'; }
   else if (l.program==='Du học Hàn Quốc') { pb='b-dhk';  progLabel='Du học Hàn Quốc'; }
   else if (['Thuê Phòng','EduCRM'].includes(l.program)) { pb='b-khac'; progLabel=l.program; }
-  else if (l.program.startsWith('Tiếng')) {
+  else if ((l.program||'').startsWith('Tiếng')) {
     const lm={'Tiếng Đức':'b-lang-duc','Tiếng Pháp':'b-lang-phap','Tiếng Hàn':'b-lang-han',
               'Tiếng Thái':'b-lang-thai','Tiếng Tây Ban Nha':'b-lang-tbn',
               'Tiếng Trung':'b-lang-trung','Tiếng Nhật':'b-lang-nhat',
               'Tiếng Ý':'b-lang-other','Tiếng Nga':'b-lang-other'};
     pb=lm[l.program]||'b-lang-other'; progLabel=l.program;
   }
+  else { pb=''; progLabel=l.program||'—'; }
   let chCell;
-  if (l.program.startsWith('Tiếng')||l.program==='Du học Hàn Quốc'||['Thuê Phòng','EduCRM'].includes(l.program))
+  if ((l.program||'').startsWith('Tiếng')||(l.program||'')==='Du học Hàn Quốc'||['Thuê Phòng','EduCRM'].includes(l.program||''))
     chCell=`<span style="color:#bbb;font-size:11px">—</span>`;
   else chCell=`<span class="badge b-page">${l.page||l.channel||''}</span>`;
 
@@ -3240,7 +3241,7 @@ function render() {
   // Dùng để tính cards — luôn phản ánh tổng quan, không bị ảnh hưởng bởi tab status
   const base = LINKS.filter(l => {
     if (aP === 'Khác') { if (!['Thuê Phòng','EduCRM'].includes(l.program)) return false; }
-    else if (aP === 'Tiếng') { if (!l.program.startsWith('Tiếng')) return false; }
+    else if (aP === 'Tiếng') { if (!(l.program||'').startsWith('Tiếng')) return false; }
     else if (aP !== 'all' && l.program !== aP) return false;
     if (aLang !== 'all' && l.program !== (LANG_PROG_MAP[aLang]||aLang)) return false;
     if (aPerson !== 'all' && (l.person||null) !== aPerson) return false;
