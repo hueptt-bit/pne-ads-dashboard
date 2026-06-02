@@ -324,7 +324,7 @@ footer { padding: 14px 28px; font-size: 11px; color: #9ca3af; border-top: 1px so
 
 <script>
 let DB_UPDATED = "2026-05-30";
-const DB_UPDATED_TIME = "15:25";
+const DB_UPDATED_TIME = "15:55";
 const LINKS = [
   {
     "id": "CDVBA_Album_DangKyTDChung_0525_3185",
@@ -3429,6 +3429,7 @@ function renderWorkflowBoard() {
   const s0 = LINKS.filter(l => {
     if (!matchProg(l)) return false;
     if ((l.workflow_state||'') !== '') return false; // đã trong workflow rồi
+    // just_completed: vẫn hiện nhưng sẽ có badge "vừa cập nhật"
     const st = getStatus(l);
     return NEED_ACTION_STATUSES.includes(st);
   });
@@ -3465,6 +3466,9 @@ function renderWorkflowBoard() {
       : '';
     const shortUrl = l.url.replace(/https?:\/\/(www\.)?facebook\.com\//,'fb/');
     const st      = getStatus(l);
+    const justDoneBanner = l.just_completed
+      ? `<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:5px 10px;margin-bottom:7px;font-size:11px;color:#15803d;font-weight:600">✅ Đã cập nhật ngày mới — hạn vẫn trong vùng cảnh báo</div>`
+      : '';
     let actionBtn = '';
     if (!l.workflow_state)
       actionBtn = `<button class="btn-wf btn-wf-1" onclick="doWf('${safeId}','gro_requested')">📢 Yêu cầu gỡ ads</button>`;
@@ -3487,7 +3491,7 @@ function renderWorkflowBoard() {
       <div class="wf-card-id">${l.section || l.id}</div>
       <div class="wf-card-meta">${l.program||'—'} · ${l.page||l.channel||'—'} · ${l.person||'—'}</div>
       <div class="wf-card-exp" style="margin-bottom:5px">Hạn hiện tại: ${exp} &nbsp;${dStr} &nbsp;${statusBadgeHtml(st)}</div>
-      ${newDateBanner}
+      ${justDoneBanner}${newDateBanner}
       <a class="wf-card-link" href="${l.url}" target="_blank">${shortUrl}</a>
       <div class="wf-card-actions">
         ${actionBtn}
@@ -3982,6 +3986,7 @@ function _callWfApi(id, newState, note, user, postUrl) {
             link.expiry_date      = link.pending_new_date;
             link.workflow_state   = '';
             link.pending_new_date = '';
+            link.just_completed   = true;  // ẩn khỏi s0 cho đến khi refresh
           }
           // Bước 1 từ bảng → tự chuyển sang kanban board
           if (newState === 'gro_requested') {
