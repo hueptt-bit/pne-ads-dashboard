@@ -3641,7 +3641,11 @@ function processSheetRows(rows) {
       const note       = (get('note') || get('Ghi chú') || get(9, '')).toString().trim();
       const page       = (get('page') || get('Page') || get(10, '')).toString().trim();
       const ngungChay  = (get('Ngừng chạy') || get(7, '')).toString().trim().toUpperCase();
-      const active     = ngungChay !== 'X';
+      // Ưu tiên field active từ GAS (boolean). Fallback: tính từ ngungChay (cho CSV/static)
+      const rawActive  = get('active', null);
+      const active     = rawActive !== null
+                         ? (rawActive === true || rawActive === 'true')
+                         : ngungChay !== 'X';
 
       // Xử lý ngày kết thúc
       let expiry_date = null;
