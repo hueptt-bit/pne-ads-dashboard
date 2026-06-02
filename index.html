@@ -3473,16 +3473,21 @@ function renderWorkflowBoard() {
     else if (l.workflow_state === 'gro_done')
       actionBtn = `<button class="btn-wf btn-wf-3" onclick="doWfDate('${safeId}')">✅ Đã cập nhật + nhập hạn mới</button>`;
     else if (l.workflow_state === 'upd_done')
-      actionBtn = `<button class="btn-wf btn-wf-4" onclick="doWf('${safeId}','completed')">✅ Đã set ads</button>`;
+      actionBtn = `<button class="btn-wf btn-wf-4" onclick="doWf('${safeId}','completed')">✅ Đã set ads${pnd ? ' (đến ' + pnd + ')' : ''}</button>`;
     const resetBtn = l.workflow_state
       ? `<button class="btn-wf btn-wf-r" onclick="doWf('${safeId}','')">↺ Reset</button>` : '';
     const stopBtnCard = `<button class="btn-wf btn-wf-stop" onclick="doStop('${safeId}')">⏹ Ngừng</button>`;
+    // Banner ngày mới cho bước 3 (upd_done)
+    const newDateBanner = (l.workflow_state === 'upd_done')
+      ? `<div style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:6px;padding:6px 10px;margin-bottom:7px;font-size:12px;color:#065f46">
+          📅 <b>Set ads đến ngày: ${pnd || '<span style="color:#b45309">chưa có — nhập khi bấm xác nhận</span>'}</b>
+         </div>`
+      : '';
     return `<div class="wf-card" data-lid="${l.id}">
       <div class="wf-card-id">${l.section || l.id}</div>
       <div class="wf-card-meta">${l.program||'—'} · ${l.page||l.channel||'—'} · ${l.person||'—'}</div>
-      <div class="wf-card-exp" style="margin-bottom:5px">${pnd
-        ? `<span style="color:#065f46;font-weight:600">Hạn mới: ${pnd}</span>`
-        : `Hạn: ${exp} &nbsp;${dStr}`} &nbsp;${statusBadgeHtml(st)}</div>
+      <div class="wf-card-exp" style="margin-bottom:5px">Hạn hiện tại: ${exp} &nbsp;${dStr} &nbsp;${statusBadgeHtml(st)}</div>
+      ${newDateBanner}
       <a class="wf-card-link" href="${l.url}" target="_blank">${shortUrl}</a>
       <div class="wf-card-actions">
         ${actionBtn}
