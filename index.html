@@ -324,7 +324,7 @@ footer { padding: 14px 28px; font-size: 11px; color: #9ca3af; border-top: 1px so
 
 <script>
 let DB_UPDATED = "2026-05-30";
-const DB_UPDATED_TIME = "14:55";
+const DB_UPDATED_TIME = "15:25";
 const LINKS = [
   {
     "id": "CDVBA_Album_DangKyTDChung_0525_3185",
@@ -3853,15 +3853,18 @@ function doWf(id, newState) {
   // Bước 4: xác nhận ngày trước khi submit — ngày lấy từ bước 3, không hỏi lại
   if (newState === 'completed') {
     var pnd = link ? (link.pending_new_date || '') : '';
+    // Nếu không tìm thấy ngày hạn trong bộ nhớ → hỏi lại ngay
     if (!pnd) {
-      alert(
-        '⚠️ Chưa tìm thấy ngày hạn mới cho:\n' + id +
-        '\n\nCó thể do:\n' +
-        '• Bước 3 "Đã cập nhật nội dung" chưa hoàn thành\n' +
-        '• Trang đã được tải lại sau bước 3\n\n' +
-        'Hãy thực hiện bước 3 trước, hoặc tải lại trang nếu đã làm ở trình duyệt khác.'
+      var curDisp = link && link.expiry_date ? _pndDisp(link.expiry_date) : '';
+      var raw = window.prompt(
+        '📅 Nhập ngày hạn mới để ghi vào Sheet cho:\n' + id +
+        (curDisp ? '\n(Hạn hiện tại: ' + curDisp + ')' : '') +
+        '\n\nĐịnh dạng: DD/MM/YYYY'
       );
-      return;
+      if (!raw) return;
+      var pm = raw.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (!pm) { alert('Định dạng không hợp lệ. Vui lòng nhập DD/MM/YYYY.'); return; }
+      pnd = pm[3] + '-' + pm[2].padStart(2,'0') + '-' + pm[1].padStart(2,'0');
     }
     var disp = _pndDisp(pnd);
     if (!window.confirm('✅ Xác nhận đã set ads:\n' + id + '\n\nHạn mới sẽ ghi vào Sheet: ' + disp + '\n\nTiếp tục?')) return;
