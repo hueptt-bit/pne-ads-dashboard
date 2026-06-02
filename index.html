@@ -51,6 +51,11 @@ body { font-family: -apple-system, Arial, sans-serif; font-size: 14px; backgroun
 .tab { padding: 5px 12px; border-radius: 7px; border: 1px solid #d0cfc8; background: #fff; cursor: pointer; font-size: 12px; color: #5f5e5a; }
 .tab.active { background: #111; color: #fff; border-color: #111; }
 .tab:hover:not(.active) { background: #f0efe8; }
+.tab-wf { border-color: #d97706; color: #92400e; background: #fffbeb; }
+.tab-wf.active { background: #d97706; color: #fff; border-color: #d97706; }
+.tab-wf:hover:not(.active) { background: #fef3c7; }
+.tab-wf #cnt-wf { background: #fde68a; color: #92400e; border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 700; margin-left: 3px; }
+.tab-wf.active #cnt-wf { background: rgba(255,255,255,.25); color: #fff; }
 select, input { padding: 5px 10px; border-radius: 7px; border: 1px solid #d0cfc8; background: #fff; font-size: 12px; color: #1a1a18; outline: none; }
 input { width: 170px; }
 input:focus { border-color: #888; }
@@ -176,6 +181,7 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
       <button class="tab" data-s="HẾT HẠN">Hết hạn</button>
       <button class="tab" data-s="OK">Còn hạn</button>
       <button class="tab" data-s="ĐÃ NGỪNG">Đã ngừng</button>
+      <button class="tab tab-wf" data-s="WORKFLOW">⚙ Đang xử lý <span id="cnt-wf">0</span></button>
     </div>
     <select id="lang-sel">
       <option value="all">Tất cả ngôn ngữ</option>
@@ -213,7 +219,7 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
 
 <script>
 let DB_UPDATED = "2026-05-30";
-const DB_UPDATED_TIME = "12:19";
+const DB_UPDATED_TIME = "13:55";
 const LINKS = [
   {
     "id": "CDVBA_Album_DangKyTDChung_0525_3185",
@@ -3149,7 +3155,7 @@ function rowHtml(l) {
               'Tiếng Ý':'b-lang-other','Tiếng Nga':'b-lang-other'};
     pb=lm[l.program]||'b-lang-other'; progLabel=l.program;
   }
-  else { pb=''; progLabel=l.program||'—'; }
+  else { pb=''; progLabel=(l.program&&l.program!=='DEFAULT'&&l.program!=='default')?l.program:'—'; }
   let chCell;
   if ((l.program||'').startsWith('Tiếng')||(l.program||'')==='Du học Hàn Quốc'||['Thuê Phòng','EduCRM'].includes(l.program||''))
     chCell=`<span style="color:#bbb;font-size:11px">—</span>`;
@@ -3258,6 +3264,7 @@ function render() {
 
   // Rows: thêm lọc theo status tab để hiện bảng
   const rows = base.filter(l => {
+    if (aS === 'WORKFLOW') return (l.workflow_state || '') !== '';
     const st = getStatus(l);
     if (aS !== 'all' && st !== aS) return false;
     return true;
@@ -3547,9 +3554,11 @@ function updateTabCounts() {
   document.getElementById('cnt-dhdd').textContent  = LINKS.filter(l=>l.program==='Du học Đức').length;
   document.getElementById('cnt-ao').textContent    = LINKS.filter(l=>l.program==='CDVBA').length;
   document.getElementById('cnt-dhk').textContent   = LINKS.filter(l=>l.program==='Du học Hàn Quốc').length;
-  document.getElementById('cnt-tieng').textContent = LINKS.filter(l=>l.program.startsWith('Tiếng')).length;
+  document.getElementById('cnt-tieng').textContent = LINKS.filter(l=>(l.program||'').startsWith('Tiếng')).length;
   document.getElementById('cnt-osd').textContent   = LINKS.filter(l=>l.program==='Kỳ thi OSD').length;
   document.getElementById('cnt-khac').textContent  = LINKS.filter(l=>['Thuê Phòng','EduCRM'].includes(l.program)).length;
+  const wfCount = LINKS.filter(l=>(l.workflow_state||'')!=='').length;
+  document.getElementById('cnt-wf').textContent    = wfCount;
   const footerNote = document.getElementById('footer-note');
   if (footerNote) footerNote.textContent = 'Double-click để mở · Cập nhật bởi Claude khi thêm link mới · ' + LINKS.length + ' link đang theo dõi';
 }
