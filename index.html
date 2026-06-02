@@ -3879,6 +3879,11 @@ function doWf(id, newState) {
 function doStop(id) {
   var link = LINKS.find(function(l) { return l.id === id; });
   if (!window.confirm('⏹ Xác nhận đánh dấu NGỪNG CHẠY:\n' + id + '\n\nLink sẽ bị ẩn khỏi danh sách đang chạy. Tiếp tục?')) return;
+  // Disable nút ngay sau confirm
+  var container = document.querySelector('tr[data-lid="' + id + '"]')
+                || document.querySelector('.wf-card[data-lid="' + id + '"]');
+  var stopBtns = container ? container.querySelectorAll('.btn-wf-stop') : [];
+  stopBtns.forEach(function(b) { b.disabled = true; b.style.opacity = '0.5'; b.textContent = '⟳'; });
   var user = _getUser();
   var url = SHEET_API
     + '?action=stop_link'
@@ -3889,15 +3894,18 @@ function doStop(id) {
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.ok) {
-        // Cập nhật local: đánh dấu inactive
         if (link) { link.active = false; }
         if (document.getElementById('wf-board').style.display === 'block') renderWorkflowBoard();
         else render();
       } else {
+        stopBtns.forEach(function(b) { b.disabled = false; b.style.opacity = ''; b.textContent = '⏹ Ngừng'; });
         alert('Lỗi: ' + (data.error || 'Không xác định'));
       }
     })
-    .catch(function(err) { alert('Lỗi kết nối: ' + err.message); });
+    .catch(function(err) {
+      stopBtns.forEach(function(b) { b.disabled = false; b.style.opacity = ''; b.textContent = '⏹ Ngừng'; });
+      alert('Lỗi kết nối: ' + err.message);
+    });
 }
 
 function doWfDate(id) {
@@ -3930,10 +3938,12 @@ function doWfDate(id) {
  * Gọi GAS set_workflow, cập nhật LINKS local, rerender row.
  */
 function _callWfApi(id, newState, note, user, postUrl) {
-  // Disable tất cả nút trong row
-  var rowEl = document.querySelector('tr[data-lid="' + id + '"]');
-  var btns  = rowEl ? rowEl.querySelectorAll('.btn-wf') : [];
-  btns.forEach(function(b) { b.disabled = true; b.textContent = '⟳'; });
+  // Disable tất cả nút trong row (bảng) hoặc card (kanban)
+  var container = document.querySelector('tr[data-lid="' + id + '"]')
+                || document.querySelector('.wf-card[data-lid="' + id + '"]');
+  var btns = container ? container.querySelectorAll('.btn-wf') : [];
+  var origTexts = [];
+  btns.forEach(function(b) { origTexts.push(b.textContent); b.disabled = true; b.style.opacity = '0.5'; b.textContent = '⟳ Đang gửi...'; });
 
   var url = SHEET_API
     + '?action=set_workflow'
@@ -3949,7 +3959,7 @@ function _callWfApi(id, newState, note, user, postUrl) {
     .then(function(data) {
       // Nếu GAS trả về mảng (chưa redeploy), data.ok sẽ undefined
       if (Array.isArray(data)) {
-        btns.forEach(function(b) { b.disabled = false; });
+        btns.forEach(function(b, i) { b.disabled = false; b.style.opacity = ''; b.textContent = origTexts[i] || b.textContent; });
         alert('Lỗi: GAS chưa được redeploy với code mới. Vào script.google.com → Deploy → Manage deployments → chọn New version.');
         return;
       }
@@ -3992,12 +4002,12 @@ function _callWfApi(id, newState, note, user, postUrl) {
         }
       } else {
         // Khôi phục nút
-        btns.forEach(function(b) { b.disabled = false; });
+        btns.forEach(function(b, i) { b.disabled = false; b.style.opacity = ''; b.textContent = origTexts[i] || b.textContent; });
         alert('Lỗi: ' + (data.error || 'Không xác định') + '\n\nRaw: ' + JSON.stringify(data).substring(0, 200));
       }
     })
     .catch(function(err) {
-      btns.forEach(function(b) { b.disabled = false; });
+      btns.forEach(function(b, i) { b.disabled = false; b.style.opacity = ''; b.textContent = origTexts[i] || b.textContent; });
       alert('Lỗi kết nối: ' + err.message);
     });
 }
