@@ -56,6 +56,33 @@ body { font-family: -apple-system, Arial, sans-serif; font-size: 14px; backgroun
 .tab-wf:hover:not(.active) { background: #fef3c7; }
 .tab-wf #cnt-wf { background: #fde68a; color: #92400e; border-radius: 4px; padding: 1px 6px; font-size: 11px; font-weight: 700; margin-left: 3px; }
 .tab-wf.active #cnt-wf { background: rgba(255,255,255,.25); color: #fff; }
+
+/* ── Workflow Kanban Board ────────────────────────────────────────────────── */
+.wf-board { display:none; }
+.wf-board-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; padding-top:4px; }
+.wf-board-hdr h2 { font-size:15px; font-weight:600; color:#1a1a18; }
+.wf-board-total { font-size:12px; color:#6b6a65; }
+.wf-pipeline { display:flex; gap:14px; align-items:flex-start; overflow-x:auto; padding-bottom:12px; }
+.wf-stage { flex:1; min-width:260px; background:#f8f7f4; border-radius:12px; border:1px solid #e0dfd8; overflow:hidden; }
+.wf-stage-hdr { padding:10px 14px 9px; font-size:12px; font-weight:600; display:flex; align-items:center; justify-content:space-between; }
+.wf-stage-cnt { border-radius:5px; padding:2px 9px; font-size:11px; font-weight:700; }
+.wf-stage.s0 .wf-stage-hdr { background:#fee2e2; color:#991b1b; border-bottom:1px solid #fca5a5; }
+.wf-stage.s0 .wf-stage-cnt { background:#fca5a5; color:#991b1b; }
+.wf-stage.s1 .wf-stage-hdr { background:#fef3c7; color:#92400e; border-bottom:1px solid #fde68a; }
+.wf-stage.s1 .wf-stage-cnt { background:#fde68a; color:#92400e; }
+.wf-stage.s2 .wf-stage-hdr { background:#dbeafe; color:#1e40af; border-bottom:1px solid #bfdbfe; }
+.wf-stage.s2 .wf-stage-cnt { background:#bfdbfe; color:#1e40af; }
+.wf-stage.s3 .wf-stage-hdr { background:#d1fae5; color:#065f46; border-bottom:1px solid #a7f3d0; }
+.wf-stage.s3 .wf-stage-cnt { background:#a7f3d0; color:#065f46; }
+.wf-cards-wrap { padding:10px; display:flex; flex-direction:column; gap:8px; min-height:60px; }
+.wf-card { background:#fff; border:1px solid #e0dfd8; border-radius:8px; padding:11px 12px; }
+.wf-card-id { font-size:11px; font-weight:600; color:#1a1a18; word-break:break-all; margin-bottom:3px; }
+.wf-card-meta { font-size:11px; color:#6b6a65; margin-bottom:5px; }
+.wf-card-exp { font-size:11px; margin-bottom:6px; }
+.wf-card-link { font-size:10px; color:#3b82f6; text-decoration:none; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-bottom:8px; }
+.wf-card-link:hover { text-decoration:underline; }
+.wf-card-actions { display:flex; gap:5px; flex-wrap:wrap; }
+.wf-empty { color:#bbb; font-size:11px; text-align:center; padding:18px 0; }
 select, input { padding: 5px 10px; border-radius: 7px; border: 1px solid #d0cfc8; background: #fff; font-size: 12px; color: #1a1a18; outline: none; }
 input { width: 170px; }
 input:focus { border-color: #888; }
@@ -66,7 +93,7 @@ thead { background: #f5f4f1; }
 th { padding: 9px 12px; text-align: left; font-size: 11px; font-weight: 600; color: #6b6a65; border-bottom: 1px solid #e0dfd8; white-space: nowrap; }
 td { padding: 8px 12px; border-bottom: 1px solid #f4f3f0; font-size: 12px; vertical-align: middle; max-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 tr:last-child td { border-bottom: none; }
-tr:hover td { background: #faf9f7; }
+tr:hover td { background: rgba(0,0,0,.025); }
 
 .badge { display: inline-block; padding: 2px 8px; border-radius: 5px; font-size: 10px; font-weight: 600; white-space: nowrap; }
 .b-het      { background: #fee2e2; color: #991b1b; }
@@ -197,6 +224,7 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
     <span class="count" id="cnt-badge"></span>
   </div>
 
+  <div id="main-table-area">
   <table>
     <thead><tr>
       <th style="width:120px">Chương trình</th>
@@ -205,7 +233,6 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
       <th style="width:88px">Hết hạn</th>
       <th style="width:80px;text-align:right">Còn lại</th>
       <th style="width:95px">Trạng thái</th>
-      <th style="width:90px">Loại</th>
       <th style="width:90px">Phụ trách</th>
       <th>Link</th>
       <th style="width:120px">Ghi chú</th>
@@ -213,13 +240,60 @@ footer { padding: 14px 24px; font-size: 11px; color: #9f9e99; border-top: 1px so
     </tr></thead>
     <tbody id="tb"></tbody>
   </table>
+  </div>
+
+  <!-- ── Workflow Kanban Board ─────────────────────────────────────────── -->
+  <div class="wf-board" id="wf-board">
+    <div class="wf-board-hdr">
+      <h2>⚙️ Tiến trình xử lý ads</h2>
+      <span class="wf-board-total" id="wf-total">0 link đang xử lý</span>
+    </div>
+    <div class="wf-pipeline">
+      <div class="wf-stage s0">
+        <div class="wf-stage-hdr">
+          <span>⚠️ Cần xử lý — Chưa bắt đầu</span>
+          <span class="wf-stage-cnt" id="wf-cnt-0">0</span>
+        </div>
+        <div class="wf-cards-wrap" id="wf-col-0">
+          <div class="wf-empty">Không có</div>
+        </div>
+      </div>
+      <div class="wf-stage s1">
+        <div class="wf-stage-hdr">
+          <span>⏳ Bước 1 — Chờ gỡ ads</span>
+          <span class="wf-stage-cnt" id="wf-cnt-1">0</span>
+        </div>
+        <div class="wf-cards-wrap" id="wf-col-1">
+          <div class="wf-empty">Không có</div>
+        </div>
+      </div>
+      <div class="wf-stage s2">
+        <div class="wf-stage-hdr">
+          <span>🔧 Bước 2 — Chờ cập nhật nội dung</span>
+          <span class="wf-stage-cnt" id="wf-cnt-2">0</span>
+        </div>
+        <div class="wf-cards-wrap" id="wf-col-2">
+          <div class="wf-empty">Không có</div>
+        </div>
+      </div>
+      <div class="wf-stage s3">
+        <div class="wf-stage-hdr">
+          <span>🎯 Bước 3 — Chờ set ads</span>
+          <span class="wf-stage-cnt" id="wf-cnt-3">0</span>
+        </div>
+        <div class="wf-cards-wrap" id="wf-col-3">
+          <div class="wf-empty">Không có</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </div>
 <footer id="footer-note"></footer>
 
 <script>
 let DB_UPDATED = "2026-05-30";
-const DB_UPDATED_TIME = "13:55";
+const DB_UPDATED_TIME = "14:25";
 const LINKS = [
   {
     "id": "CDVBA_Album_DangKyTDChung_0525_3185",
@@ -3179,16 +3253,15 @@ function rowHtml(l) {
     }
   }
   const shortUrl=l.url.replace(/https?:\/\/(www\.)?facebook\.com\//,'fb/');
-  let renewBtn='';
-  if (ORIG[l.id]&&ORIG[l.id].expiry_date&&l.active) {
-    if (!l.expiry_date)    renewBtn=`<span class="btn-renewal is-always">∞ Luôn chạy</span>`;
-    else if (l.needs_renewal) renewBtn=`<span class="btn-renewal is-renewal">↻ Gia hạn</span>`;
-    else               renewBtn=`<span class="btn-renewal no-renewal">⏹ Ngừng</span>`;
-  }
-  // ── Cột Hành động: workflow 4 bước (chỉ với link needs_renewal + active) ──
+  // ── Màu nền row theo mức khẩn cấp ──
+  const rowBg = st==='HẾT HẠN' ? 'background:#fff5f5' :
+                st==='GIA HẠN' ? 'background:#fff8f0' :
+                st==='SẮP HẾT'? 'background:#fefce8' : '';
+  // ── Cột Hành động: workflow 4 bước (chỉ với link cần gia hạn + active + sắp/đã hết) ──
   const safeId = l.id.replace(/'/g, "\\'");
   let actionCell = '<td></td>';
-  if (l.needs_renewal && l.active) {
+  const URGENT = ['HẾT HẠN','GIA HẠN','SẮP HẾT'];
+  if (l.needs_renewal && l.active && URGENT.includes(st)) {
     const ws  = l.workflow_state || '';
     const pnd = l.pending_new_date || '';   // hạn mới đã nhập ở bước 3, chờ B xác nhận
     let inner = '';
@@ -3210,14 +3283,13 @@ function rowHtml(l) {
     }
     actionCell = `<td><div class="wf-cell">${inner}</div></td>`;
   }
-  return `<tr data-lid="${l.id}">
+  return `<tr data-lid="${l.id}" style="${rowBg}">
     <td><span class="badge ${pb}">${progLabel}</span></td>
     <td title="${l.section}" style="white-space:normal;word-break:break-all;max-width:180px">${l.section}</td>
     <td>${chCell}</td>
     <td style="font-size:11px">${dateStr}</td>
     <td style="text-align:right">${typeof dt==='string'&&dt.startsWith('<')?dt:`<span class="days always">${dt}</span>`}</td>
     <td><span class="badge ${sc}">${stLabel}</span></td>
-    <td>${renewBtn}</td>
     <td style="font-size:11px;color:${l.person?'#1a1a18':'#bbb'}">${l.person||'—'}</td>
     <td><a href="${l.url}" target="_blank" title="${l.url}">${shortUrl}</a></td>
     <td class="note-cell" title="${l.note||''}">${l.note||''}</td>
@@ -3262,6 +3334,13 @@ function render() {
 
   updateCards(base);
 
+  // Cập nhật badge "Đang xử lý" = link hết/sắp hết chưa có workflow + link đang trong workflow
+  const wfBadge = LINKS.filter(l => {
+    if ((l.workflow_state||'') !== '') return true;
+    return ['HẾT HẠN','GIA HẠN','SẮP HẾT'].includes(getStatus(l));
+  }).length;
+  document.getElementById('cnt-wf').textContent = wfBadge;
+
   // Rows: thêm lọc theo status tab để hiện bảng
   const rows = base.filter(l => {
     if (aS === 'WORKFLOW') return (l.workflow_state || '') !== '';
@@ -3282,7 +3361,7 @@ function render() {
   document.getElementById('cnt-badge').textContent = rows.length + ' / ' + LINKS.length + ' link';
 
   const tb = document.getElementById('tb');
-  if (!rows.length) { tb.innerHTML='<tr><td colspan="11" class="empty">Không có link phù hợp</td></tr>'; return; }
+  if (!rows.length) { tb.innerHTML='<tr><td colspan="10" class="empty">Không có link phù hợp</td></tr>'; return; }
 
   const _sy = window.scrollY;
   tb.innerHTML = rows.map(rowHtml).join('');
@@ -3296,14 +3375,128 @@ document.getElementById('prog-tabs').addEventListener('click', function(e) {
   document.querySelectorAll('.ptab').forEach(x=>x.classList.remove('active'));
   t.classList.add('active'); aP=t.dataset.p;
   document.getElementById('lang-sel').style.display = (aP==='Tiếng'||aP==='all')?'':'none';
-  render();
+  if (document.getElementById('wf-board').style.display === 'block') {
+    renderWorkflowBoard();
+  } else {
+    render();
+  }
 });
+function renderWorkflowBoard() {
+  // Lọc theo chương trình + ngôn ngữ + phụ trách đang chọn
+  function matchProg(l) {
+    if (aP === 'Khác') { if (!['Thuê Phòng','EduCRM'].includes(l.program)) return false; }
+    else if (aP === 'Tiếng') { if (!(l.program||'').startsWith('Tiếng')) return false; }
+    else if (aP !== 'all' && l.program !== aP) return false;
+    if (aLang !== 'all' && l.program !== (LANG_PROG_MAP[aLang]||aLang)) return false;
+    if (aPerson !== 'all' && (l.person||null) !== aPerson) return false;
+    return true;
+  }
+
+  // Cột 0: link sắp/đã hết hạn chưa vào workflow
+  const NEED_ACTION_STATUSES = ['HẾT HẠN','GIA HẠN','SẮP HẾT'];
+  const s0 = LINKS.filter(l => {
+    if (!matchProg(l)) return false;
+    if ((l.workflow_state||'') !== '') return false; // đã trong workflow rồi
+    const st = getStatus(l);
+    return NEED_ACTION_STATUSES.includes(st);
+  });
+  const inWf = LINKS.filter(l => matchProg(l) && (l.workflow_state||'') !== '');
+  const s1 = inWf.filter(l => l.workflow_state === 'gro_requested');
+  const s2 = inWf.filter(l => l.workflow_state === 'gro_done');
+  const s3 = inWf.filter(l => l.workflow_state === 'upd_done');
+
+  const total = s0.length + inWf.length;
+  document.getElementById('wf-total').textContent = total + ' link cần xử lý';
+  document.getElementById('cnt-wf').textContent = total;
+  document.getElementById('wf-cnt-0').textContent = s0.length;
+  document.getElementById('wf-cnt-1').textContent = s1.length;
+  document.getElementById('wf-cnt-2').textContent = s2.length;
+  document.getElementById('wf-cnt-3').textContent = s3.length;
+
+  function statusBadgeHtml(st) {
+    const map = {
+      'HẾT HẠN': '<span class="badge b-het">Hết hạn</span>',
+      'GIA HẠN':  '<span class="badge b-gia-han">Cần gia hạn</span>',
+      'SẮP HẾT': '<span class="badge b-sap">Sắp hết</span>',
+    };
+    return map[st] || '';
+  }
+
+  function wfCardHtml(l) {
+    const safeId  = l.id.replace(/'/g,"\\'");
+    const pnd     = (l.pending_new_date||'') ? _pndDisp(l.pending_new_date) : '';
+    const exp     = l.expiry_date ? new Date(l.expiry_date).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—';
+    const d       = daysDiff(l.expiry_date);
+    const dStr    = d !== null
+      ? (d < 0 ? `<span style="color:#b91c1c;font-weight:600">Quá hạn ${Math.abs(d)} ngày</span>`
+               : `<span style="color:#d97706">Còn ${d} ngày</span>`)
+      : '';
+    const shortUrl = l.url.replace(/https?:\/\/(www\.)?facebook\.com\//,'fb/');
+    const st      = getStatus(l);
+    let actionBtn = '';
+    if (!l.workflow_state)
+      actionBtn = `<button class="btn-wf btn-wf-1" onclick="doWf('${safeId}','gro_requested')">📢 Yêu cầu gỡ ads</button>`;
+    else if (l.workflow_state === 'gro_requested')
+      actionBtn = `<button class="btn-wf btn-wf-2" onclick="doWf('${safeId}','gro_done')">✅ Xác nhận đã gỡ</button>`;
+    else if (l.workflow_state === 'gro_done')
+      actionBtn = `<button class="btn-wf btn-wf-3" onclick="doWfDate('${safeId}')">✅ Đã cập nhật + nhập hạn mới</button>`;
+    else if (l.workflow_state === 'upd_done')
+      actionBtn = `<button class="btn-wf btn-wf-4" onclick="doWf('${safeId}','completed')">✅ Đã set ads</button>`;
+    const resetBtn = l.workflow_state
+      ? `<button class="btn-wf btn-wf-r" onclick="doWf('${safeId}','')">↺ Reset</button>` : '';
+    return `<div class="wf-card" data-lid="${l.id}">
+      <div class="wf-card-id">${l.section || l.id}</div>
+      <div class="wf-card-meta">${l.program||'—'} · ${l.page||l.channel||'—'} · ${l.person||'—'}</div>
+      <div class="wf-card-exp" style="margin-bottom:5px">${pnd
+        ? `<span style="color:#065f46;font-weight:600">Hạn mới: ${pnd}</span>`
+        : `Hạn: ${exp} &nbsp;${dStr}`} &nbsp;${statusBadgeHtml(st)}</div>
+      <a class="wf-card-link" href="${l.url}" target="_blank">${shortUrl}</a>
+      <div class="wf-card-actions">
+        ${actionBtn}
+        ${resetBtn}
+      </div>
+    </div>`;
+  }
+
+  // s0 sắp xếp: hết hạn trước, sắp hết sau
+  const s0sorted = s0.slice().sort((a,b) => {
+    const order = {'HẾT HẠN':0,'GIA HẠN':1,'SẮP HẾT':2};
+    const sa = getStatus(a), sb = getStatus(b);
+    if (order[sa] !== order[sb]) return (order[sa]||9) - (order[sb]||9);
+    const da = daysDiff(a.expiry_date), db = daysDiff(b.expiry_date);
+    return (da??999) - (db??999);
+  });
+
+  document.getElementById('wf-col-0').innerHTML = s0sorted.length
+    ? s0sorted.map(wfCardHtml).join('')
+    : '<div class="wf-empty">Không có link nào cần xử lý</div>';
+  ['1','2','3'].forEach(function(n, i) {
+    const list = [s1,s2,s3][i];
+    document.getElementById('wf-col-'+n).innerHTML = list.length
+      ? list.map(wfCardHtml).join('')
+      : '<div class="wf-empty">Không có link nào</div>';
+  });
+}
+
 document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-  t.classList.add('active'); aS=t.dataset.s; render();
+  t.classList.add('active'); aS=t.dataset.s;
+  if (aS === 'WORKFLOW') {
+    document.getElementById('main-table-area').style.display = 'none';
+    document.getElementById('wf-board').style.display = 'block';
+    renderWorkflowBoard();
+  } else {
+    document.getElementById('main-table-area').style.display = '';
+    document.getElementById('wf-board').style.display = 'none';
+    render();
+  }
 }));
-document.getElementById('lang-sel').addEventListener('change',e=>{aLang=e.target.value;render();});
-document.getElementById('person-sel').addEventListener('change',e=>{aPerson=e.target.value;render();});
+function renderActive() {
+  if (document.getElementById('wf-board').style.display === 'block') renderWorkflowBoard();
+  else render();
+}
+document.getElementById('lang-sel').addEventListener('change',e=>{aLang=e.target.value;renderActive();});
+document.getElementById('person-sel').addEventListener('change',e=>{aPerson=e.target.value;renderActive();});
 document.getElementById('q').addEventListener('input',e=>{q=e.target.value.trim().toLowerCase();render();});
 
 // Toggle Loại — cập nhật đúng row, không sort lại toàn bảng
