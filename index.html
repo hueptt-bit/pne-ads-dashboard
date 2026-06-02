@@ -3428,6 +3428,7 @@ function renderWorkflowBoard() {
   const NEED_ACTION_STATUSES = ['HẾT HẠN','GIA HẠN','SẮP HẾT'];
   const s0 = LINKS.filter(l => {
     if (!matchProg(l)) return false;
+    if (l.active === false) return false;            // Ngừng chạy — không hiện trong Cần xử lý
     if ((l.workflow_state||'') !== '') return false; // đã trong workflow rồi
     // just_completed: vẫn hiện nhưng sẽ có badge "vừa cập nhật"
     const st = getStatus(l);
