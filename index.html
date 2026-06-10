@@ -7265,6 +7265,10 @@ function getStatus(l) {
   if (!l.active) return 'ĐÃ NGỪNG';       // X trong cột Ngừng chạy → luôn là Đã ngừng
   if (!l.expiry_date) return 'LUÔN CHẠY';
   const d = daysDiff(l.expiry_date);
+  if (l.khong_gia_han) {
+    // Không gia hạn: chạy đến hết hạn rồi tự dừng — không cần action
+    return d < 0 ? 'ĐÃ NGỪNG' : 'OK';
+  }
   if (l.needs_renewal) {
     return d < 0 ? 'HẾT HẠN' : d <= 14 ? 'GIA HẠN' : 'OK';
   } else {
@@ -7688,6 +7692,9 @@ function processSheetRows(rows) {
       // needs_renewal: có ngày kết thúc = cần gia hạn khi hết, không có = luôn chạy
       const needs_renewal = expiry_date !== null;
 
+      const rawKgh = get('khong_gia_han', null);
+      const khong_gia_han = rawKgh === true || rawKgh === 'true';
+
       newLinks.push({
         id: contentId || ('sheet-' + (idx + 1)),
         program: program || 'Khác',
@@ -7696,6 +7703,7 @@ function processSheetRows(rows) {
         url: url,
         expiry_date: expiry_date,
         active: active,
+        khong_gia_han: khong_gia_han,
         note: note,
         page: page,
         person: person,
