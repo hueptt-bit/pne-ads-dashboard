@@ -153,7 +153,7 @@ a:hover { text-decoration: underline; }
 .days.fine   { color: #16a34a; }
 .days.always { color: #2563eb; }
 .empty { text-align: center; padding: 40px; color: #9ca3af; font-size: 13px; }
-.note-cell { font-size: 11px; color: #d1d5db; font-style: italic; }
+.note-cell { font-size: 11px; color: #6b7280; font-style: italic; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 footer { padding: 14px 28px; font-size: 11px; color: #9ca3af; border-top: 1px solid #f3f4f6; margin-top: 4px; }
 .btn-save { padding:5px 14px; border-radius:8px; border:1px solid #e5e7eb; background:#fff; font-size:11px; font-weight:600; color:#2563eb; cursor:pointer; transition:all .12s; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,.05); }
 .btn-save:hover:not(.saving) { background:#eff6ff; border-color:#bfdbfe; box-shadow:0 2px 4px rgba(37,99,235,.15); }
@@ -324,7 +324,7 @@ footer { padding: 14px 28px; font-size: 11px; color: #9ca3af; border-top: 1px so
 
 <script>
 let DB_UPDATED = "2026-05-30";
-const DB_UPDATED_TIME = "10:23";
+const DB_UPDATED_TIME = "10:53";
 const LINKS = [
   {
     "id": "CDVBA_Album_DangKyTDChung_0525_3185",
@@ -7296,9 +7296,10 @@ function rowHtml(l) {
   }
   else { pb=''; progLabel=(l.program&&l.program!=='DEFAULT'&&l.program!=='default')?l.program:'—'; }
   let chCell;
-  if ((l.program||'').startsWith('Tiếng')||(l.program||'')==='Du học Hàn Quốc'||['Thuê Phòng','EduCRM'].includes(l.program||''))
-    chCell=`<span style="color:#bbb;font-size:11px">—</span>`;
-  else chCell=`<span class="badge b-page">${l.page||l.channel||''}</span>`;
+  const _pageVal = l.page || l.channel || '';
+  chCell = _pageVal
+    ? `<span class="badge b-page">${_pageVal}</span>`
+    : `<span style="color:#bbb;font-size:11px">—</span>`;
 
   let sc, stLabel, dt, dateStr;
   if (!l.active) {
