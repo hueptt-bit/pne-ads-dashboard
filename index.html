@@ -153,7 +153,14 @@ a:hover { text-decoration: underline; }
 .days.fine   { color: #16a34a; }
 .days.always { color: #2563eb; }
 .empty { text-align: center; padding: 40px; color: #9ca3af; font-size: 13px; }
-.note-cell { font-size: 11px; color: #6b7280; font-style: italic; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.note-cell { font-size: 11px; color: #6b7280; font-style: italic; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
+.note-cell:hover { color: #374151; text-decoration: underline dotted; }
+#note-popup-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:9999; align-items:center; justify-content:center; }
+#note-popup-overlay.show { display:flex; }
+#note-popup { background:#fff; border-radius:14px; padding:20px 22px; max-width:420px; width:90%; box-shadow:0 8px 32px rgba(0,0,0,.18); position:relative; }
+#note-popup h4 { margin:0 0 10px; font-size:13px; color:#374151; font-weight:700; }
+#note-popup pre { font-size:12px; color:#4b5563; white-space:pre-wrap; word-break:break-word; margin:0; font-family:inherit; line-height:1.6; }
+#note-popup-close { position:absolute; top:10px; right:14px; background:none; border:none; font-size:18px; cursor:pointer; color:#9ca3af; line-height:1; }
 footer { padding: 14px 28px; font-size: 11px; color: #9ca3af; border-top: 1px solid #f3f4f6; margin-top: 4px; }
 .btn-save { padding:5px 14px; border-radius:8px; border:1px solid #e5e7eb; background:#fff; font-size:11px; font-weight:600; color:#2563eb; cursor:pointer; transition:all .12s; white-space:nowrap; box-shadow:0 1px 2px rgba(0,0,0,.05); }
 .btn-save:hover:not(.saving) { background:#eff6ff; border-color:#bfdbfe; box-shadow:0 2px 4px rgba(37,99,235,.15); }
@@ -7356,7 +7363,7 @@ function rowHtml(l) {
     <td><span class="badge ${sc}">${stLabel}</span></td>
     <td style="font-size:11px;color:${l.person?'#1a1a18':'#bbb'}">${l.person||'—'}</td>
     <td><a href="${l.url}" target="_blank" title="${l.url}">${shortUrl}</a></td>
-    <td class="note-cell" title="${l.note||''}">${l.note||''}</td>
+    <td class="note-cell" data-note="${(l.note||'').replace(/"/g,'&quot;')}" onclick="showNote(this)">${l.note||''}</td>
     ${actionCell}
   </tr>`;
 }
@@ -8090,6 +8097,28 @@ processSheetRows = function(data) {
   }
   startCountdown();
 };
+
+// ── Note popup ────────────────────────────────────────────────────────────────
+function showNote(cell) {
+  const text = cell.getAttribute('data-note') || '';
+  if (!text) return;
+  document.getElementById('note-popup-content').textContent = text;
+  document.getElementById('note-popup-overlay').classList.add('show');
+}
+document.getElementById('note-popup-overlay').addEventListener('click', function(e) {
+  if (e.target === this || e.target.id === 'note-popup-close') this.classList.remove('show');
+});
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') document.getElementById('note-popup-overlay').classList.remove('show');
+});
 </script>
+
+<div id="note-popup-overlay">
+  <div id="note-popup">
+    <button id="note-popup-close" onclick="document.getElementById('note-popup-overlay').classList.remove('show')">✕</button>
+    <h4>Ghi chú</h4>
+    <pre id="note-popup-content"></pre>
+  </div>
+</div>
 </body>
 </html>
