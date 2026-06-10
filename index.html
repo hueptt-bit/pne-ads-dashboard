@@ -7699,7 +7699,9 @@ function processSheetRows(rows) {
         note: note,
         page: page,
         person: person,
-        needs_renewal: needs_renewal
+        needs_renewal: needs_renewal,
+        workflow_state:   (get('workflow_state')   || '').toString().trim(),
+        pending_new_date: (get('pending_new_date') || '').toString().trim()
       });
     });
 
