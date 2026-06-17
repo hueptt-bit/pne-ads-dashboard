@@ -7941,7 +7941,7 @@ function doWf(id, newState) {
       );
       if (!raw) return;
       var pm = raw.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-      if (!pm) { alert('Định dạng không hợp lệ. Vui lòng nhập DD/MM/YYYY.'); return; }
+      if (!pm) { alert('Định dạng không hợp lệ. Vui lòng nhập DD/MM/YYYY.\nVí dụ: 31/08/2026'); return; }
       pnd = pm[3] + '-' + pm[2].padStart(2,'0') + '-' + pm[1].padStart(2,'0');
     }
     var disp = _pndDisp(pnd);
