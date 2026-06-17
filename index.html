@@ -7857,7 +7857,11 @@ function updateTabCounts() {
   document.getElementById('cnt-tieng').textContent = LINKS.filter(l=>(l.program||'').startsWith('Tiếng')).length;
   document.getElementById('cnt-osd').textContent   = LINKS.filter(l=>l.program==='Kỳ thi OSD').length;
   document.getElementById('cnt-khac').textContent  = LINKS.filter(l=>['Thuê Phòng','EduCRM'].includes(l.program)).length;
-  const wfCount = LINKS.filter(l=>(l.workflow_state||'')!=='').length;
+  // Badge = link đang trong workflow + link hết/sắp hết chưa bắt đầu workflow
+  const wfCount = LINKS.filter(l => {
+    if ((l.workflow_state||'') !== '') return true;
+    return ['HẾT HẠN','GIA HẠN','SẮP HẾT'].includes(getStatus(l));
+  }).length;
   document.getElementById('cnt-wf').textContent    = wfCount;
   const footerNote = document.getElementById('footer-note');
   if (footerNote) footerNote.textContent = 'Double-click để mở · Cập nhật bởi Claude khi thêm link mới · ' + LINKS.length + ' link đang theo dõi';
