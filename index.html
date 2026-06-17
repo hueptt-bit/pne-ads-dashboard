@@ -7829,7 +7829,7 @@ render();
 loadFromSheet();
 
 // ─── AUTO-REFRESH ────────────────────────────────────────────────────────────
-const AUTO_REFRESH_SEC = 120; // tự động fetch lại mỗi 2 phút
+const AUTO_REFRESH_SEC = 60; // tự động fetch lại mỗi 1 phút
 let _nextRefreshIn = AUTO_REFRESH_SEC;
 let _countdownInterval = null;
 
@@ -7865,11 +7865,27 @@ function updateTabCounts() {
 
 // ─── WORKFLOW 4 BƯỚC ──────────────────────────────────────────────────────────
 
-/** Format YYYY-MM-DD → DD/MM/YYYY để hiển thị */
+/** Format YYYY-MM-DD → DD/MM/YYYY để hiển thị. Xử lý cả Date object và chuỗi timezone. */
 function _pndDisp(ymd) {
   if (!ymd) return '?';
-  var p = ymd.split('-');
-  return p.length === 3 ? p[2]+'/'+p[1]+'/'+p[0] : ymd;
+  // Date object (hiếm nhưng có thể xảy ra)
+  if (ymd instanceof Date) {
+    var d = ymd.getDate(), mo = ymd.getMonth()+1, yr = ymd.getFullYear();
+    return String(d).padStart(2,'0')+'/'+String(mo).padStart(2,'0')+'/'+yr;
+  }
+  var s = String(ymd).trim();
+  // YYYY-MM-DD
+  var m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) return m[3]+'/'+m[2]+'/'+m[1];
+  // DD/MM/YYYY (đã đúng)
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) return s;
+  // Chuỗi timezone đầy đủ (vd: "Tue Jun 23 2026 00:00:00 GMT+0700")
+  var dt = new Date(s);
+  if (!isNaN(dt.getTime())) {
+    var d2=dt.getDate(), mo2=dt.getMonth()+1, yr2=dt.getFullYear();
+    return String(d2).padStart(2,'0')+'/'+String(mo2).padStart(2,'0')+'/'+yr2;
+  }
+  return s;
 }
 
 /**
@@ -8052,19 +8068,8 @@ function _callWfApi(id, newState, note, user, postUrl) {
             renderWorkflowBoard();
             return;
           }
-          // Re-query sau async (rowEl cũ có thể bị stale do auto-refresh)
-          if (document.getElementById('wf-board').style.display === 'block') {
-            renderWorkflowBoard();
-          } else {
-            var freshRow = document.querySelector('tr[data-lid="' + id + '"]');
-            if (freshRow) {
-              var tmp = document.createElement('tbody');
-              tmp.innerHTML = rowHtml(link);
-              freshRow.replaceWith(tmp.firstElementChild);
-            } else {
-              render();
-            }
-          }
+          // Reload từ Sheet ngay sau action — sync cho tất cả user
+          setTimeout(function() { loadFromSheet(); }, 800);
         }
       } else {
         // Khôi phục nút
