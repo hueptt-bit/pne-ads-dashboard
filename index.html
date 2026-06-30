@@ -7872,6 +7872,7 @@ function updateTabCounts() {
 /** Format YYYY-MM-DD → DD/MM/YYYY để hiển thị. Xử lý cả Date object và chuỗi timezone. */
 function _pndDisp(ymd) {
   if (!ymd) return '?';
+  if (ymd === 'UNLIMITED') return 'Không có thời hạn';
   // Date object (hiếm nhưng có thể xảy ra)
   if (ymd instanceof Date) {
     var d = ymd.getDate(), mo = ymd.getMonth()+1, yr = ymd.getFullYear();
@@ -7935,22 +7936,37 @@ function doWf(id, newState) {
   // Bước 4: xác nhận ngày trước khi submit — ngày lấy từ bước 3, không hỏi lại
   if (newState === 'completed') {
     var pnd = link ? (link.pending_new_date || '') : '';
-    // Nếu không tìm thấy ngày hạn trong bộ nhớ → hỏi lại ngay
-    if (!pnd) {
-      var curDisp = link && link.expiry_date ? _pndDisp(link.expiry_date) : '';
-      var raw = window.prompt(
-        '📅 Nhập ngày hạn mới để ghi vào Sheet cho:\n' + id +
-        (curDisp ? '\n(Hạn hiện tại: ' + curDisp + ')' : '') +
-        '\n\nĐịnh dạng: DD/MM/YYYY'
-      );
-      if (!raw) return;
-      var pm = raw.trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-      if (!pm) { alert('Định dạng không hợp lệ. Vui lòng nhập DD/MM/YYYY.\nVí dụ: 31/08/2026'); return; }
-      pnd = pm[3] + '-' + pm[2].padStart(2,'0') + '-' + pm[1].padStart(2,'0');
+
+    function _doComplete(pnd) {
+      var disp = _pndDisp(pnd);
+      var confirmMsg = pnd === 'UNLIMITED'
+        ? '✅ Xác nhận đã set ads:\n' + id + '\n\nLink này sẽ được đặt là Không có thời hạn.\n\nTiếp tục?'
+        : '✅ Xác nhận đã set ads:\n' + id + '\n\nHạn mới sẽ ghi vào Sheet: ' + disp + '\n\nTiếp tục?';
+      if (!window.confirm(confirmMsg)) return;
+      _callWfApi(id, 'completed', pnd, user, postUrl);
     }
-    var disp = _pndDisp(pnd);
-    if (!window.confirm('✅ Xác nhận đã set ads:\n' + id + '\n\nHạn mới sẽ ghi vào Sheet: ' + disp + '\n\nTiếp tục?')) return;
-    _callWfApi(id, 'completed', pnd, user, postUrl);
+
+    if (!pnd) {
+      // Không có pnd trong bộ nhớ → mở modal để nhập
+      var curDisp = (link && link.expiry_date && link.expiry_date !== 'UNLIMITED') ? _pndDisp(link.expiry_date) : '';
+      _showDateModal({
+        title: '📅 Nhập hạn mới để ghi vào Sheet cho: ' + id,
+        sub:   curDisp ? 'Hạn hiện tại: ' + curDisp : '',
+        defaultDate: curDisp
+      }, function(result) {
+        var resolvedPnd;
+        if (result === 'UNLIMITED') {
+          resolvedPnd = 'UNLIMITED';
+        } else {
+          var pm = result.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+          if (!pm) return;
+          resolvedPnd = pm[3] + '-' + pm[2].padStart(2,'0') + '-' + pm[1].padStart(2,'0');
+        }
+        _doComplete(resolvedPnd);
+      });
+    } else {
+      _doComplete(pnd);
+    }
     return;
   }
 
@@ -7995,28 +8011,26 @@ function doStop(id) {
 
 function doWfDate(id) {
   var link    = LINKS.find(function(l) { return l.id === id; });
-  var curDisp = link && link.expiry_date ? _pndDisp(link.expiry_date) : '';
+  var curDisp = (link && link.expiry_date && link.expiry_date !== 'UNLIMITED') ? _pndDisp(link.expiry_date) : '';
 
-  var input = window.prompt(
-    '📝 Xác nhận đã cập nhật nội dung cho:\n' + id
-    + (curDisp ? '\n\nHạn hiện tại: ' + curDisp : '')
-    + '\n\nNhập ngày hết hạn mới cho ads (DD/MM/YYYY):',
-    curDisp
-  );
-  if (input === null) return;
-  input = input.trim();
-  if (!input) { alert('Vui lòng nhập ngày hết hạn mới.'); return; }
-
-  var m = input.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (!m) { alert('Định dạng không đúng.\nNhập theo dạng DD/MM/YYYY — ví dụ: 31/08/2026'); return; }
-
-  var dd=m[1].padStart(2,'0'), mm2=m[2].padStart(2,'0'), yyyy=m[3];
-  var date = yyyy+'-'+mm2+'-'+dd;  // YYYY-MM-DD
-
-  var user = _getUser();
-  var link2 = LINKS.find(function(l) { return l.id === id; });
-  var postUrl = link2 ? (link2.url || '') : '';
-  _callWfApi(id, 'upd_done', date, user, postUrl);
+  _showDateModal({
+    title: '📝 Đã cập nhật nội dung: ' + id,
+    sub:   curDisp ? 'Hạn hiện tại: ' + curDisp : '',
+    defaultDate: curDisp
+  }, function(result) {
+    var date;
+    if (result === 'UNLIMITED') {
+      date = 'UNLIMITED';
+    } else {
+      var m = result.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (!m) return;
+      date = m[3] + '-' + m[2].padStart(2,'0') + '-' + m[1].padStart(2,'0');
+    }
+    var user = _getUser();
+    var link2 = LINKS.find(function(l) { return l.id === id; });
+    var postUrl = link2 ? (link2.url || '') : '';
+    _callWfApi(id, 'upd_done', date, user, postUrl);
+  });
 }
 
 /**
@@ -8129,5 +8143,103 @@ document.addEventListener('keydown', function(e) {
     <pre id="note-popup-content"></pre>
   </div>
 </div>
+
+<!-- ── Date Modal (nhập hạn mới / chọn Không có thời hạn) ──────────────── -->
+<style>
+#dm-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:10000; align-items:center; justify-content:center; }
+#dm-overlay.show { display:flex; }
+#dm-box { background:#fff; border-radius:14px; padding:24px; width:340px; box-shadow:0 10px 36px rgba(0,0,0,.2); position:relative; }
+#dm-title { font-size:13px; font-weight:700; color:#111827; margin-bottom:4px; line-height:1.4; }
+#dm-sub   { font-size:11px; color:#6b7280; margin-bottom:16px; }
+#dm-date-group label { font-size:11px; font-weight:600; color:#374151; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:.4px; }
+#dm-date-input { width:100%; border:1.5px solid #d1d5db; border-radius:8px; padding:9px 12px; font-size:14px; outline:none; transition:border-color .15s; }
+#dm-date-input:focus { border-color:#2563eb; }
+#dm-date-input.err  { border-color:#ef4444; }
+#dm-date-input:disabled { background:#f9fafb; color:#9ca3af; cursor:not-allowed; }
+#dm-unlimited-row { display:flex; align-items:center; gap:8px; margin-top:12px; margin-bottom:20px; cursor:pointer; }
+#dm-unlimited-cb  { width:16px; height:16px; cursor:pointer; accent-color:#2563eb; }
+#dm-unlimited-lbl { font-size:13px; color:#374151; cursor:pointer; user-select:none; }
+#dm-actions { display:flex; gap:8px; justify-content:flex-end; }
+#dm-cancel { padding:8px 18px; border-radius:8px; border:1.5px solid #e5e7eb; background:#fff; font-size:13px; cursor:pointer; color:#4b5563; }
+#dm-cancel:hover { background:#f9fafb; }
+#dm-ok     { padding:8px 22px; border-radius:8px; border:none; background:#2563eb; color:#fff; font-size:13px; font-weight:600; cursor:pointer; }
+#dm-ok:hover { background:#1d4ed8; }
+</style>
+
+<div id="dm-overlay">
+  <div id="dm-box">
+    <div id="dm-title"></div>
+    <div id="dm-sub"></div>
+    <div id="dm-date-group">
+      <label>Ngày hết hạn mới (DD/MM/YYYY)</label>
+      <input id="dm-date-input" type="text" placeholder="31/08/2026">
+    </div>
+    <div id="dm-unlimited-row">
+      <input type="checkbox" id="dm-unlimited-cb">
+      <label id="dm-unlimited-lbl" for="dm-unlimited-cb">Không có thời hạn</label>
+    </div>
+    <div id="dm-actions">
+      <button id="dm-cancel">Huỷ</button>
+      <button id="dm-ok">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var _dmCallback = null;
+
+function _showDateModal(opts, cb) {
+  document.getElementById('dm-title').textContent = opts.title || '';
+  document.getElementById('dm-sub').textContent   = opts.sub   || '';
+  var inp = document.getElementById('dm-date-input');
+  inp.value    = opts.defaultDate || '';
+  inp.disabled = false;
+  inp.className = '';
+  var cb_ = document.getElementById('dm-unlimited-cb');
+  cb_.checked  = false;
+  document.getElementById('dm-overlay').classList.add('show');
+  setTimeout(function(){ inp.focus(); inp.select(); }, 80);
+  _dmCallback = cb;
+}
+
+document.getElementById('dm-unlimited-cb').addEventListener('change', function() {
+  var inp = document.getElementById('dm-date-input');
+  inp.disabled  = this.checked;
+  inp.className = '';
+  if (this.checked) inp.value = '';
+});
+
+document.getElementById('dm-cancel').addEventListener('click', function() {
+  document.getElementById('dm-overlay').classList.remove('show');
+  _dmCallback = null;
+});
+
+document.getElementById('dm-ok').addEventListener('click', function() {
+  var unlimited = document.getElementById('dm-unlimited-cb').checked;
+  var inp = document.getElementById('dm-date-input');
+  if (unlimited) {
+    document.getElementById('dm-overlay').classList.remove('show');
+    if (_dmCallback) { var f = _dmCallback; _dmCallback = null; f('UNLIMITED'); }
+    return;
+  }
+  var val = inp.value.trim();
+  if (!val || !/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(val)) {
+    inp.className = 'err'; inp.focus(); return;
+  }
+  inp.className = '';
+  document.getElementById('dm-overlay').classList.remove('show');
+  if (_dmCallback) { var f2 = _dmCallback; _dmCallback = null; f2(val); }
+});
+
+// Nhấn Enter trong input = bấm OK
+document.getElementById('dm-date-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') document.getElementById('dm-ok').click();
+  if (e.key === 'Escape') document.getElementById('dm-cancel').click();
+});
+
+document.getElementById('dm-overlay').addEventListener('click', function(e) {
+  if (e.target === this) document.getElementById('dm-cancel').click();
+});
+</script>
 </body>
 </html>
