@@ -8203,7 +8203,9 @@ function _showDateModal(opts, cb) {
 }
 
 document.getElementById('dm-unlimited-cb').addEventListener('change', function() {
-  var inp = document.getElementById('dm-date-input');
+  var inp   = document.getElementById('dm-date-input');
+  var group = document.getElementById('dm-date-group');
+  group.style.display = this.checked ? 'none' : '';
   inp.disabled  = this.checked;
   inp.className = '';
   if (this.checked) inp.value = '';
