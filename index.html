@@ -254,6 +254,10 @@ footer { padding: 14px 28px; font-size: 11px; color: #9ca3af; border-top: 1px so
       <option value="all">Tất cả phụ trách</option>
       <option>Ngọc</option><option>Dương</option><option>Hà</option><option>Tiên</option>
     </select>
+    <select id="adspic-sel">
+      <option value="all">Tất cả Ads PIC</option>
+      <option>Nguyên</option><option>Trúc</option>
+    </select>
     <div style="position:relative;display:inline-flex;align-items:center">
       <input id="q" type="text" placeholder="Tìm link, mục..." style="padding-right:26px">
       <button id="btn-clear-q" onclick="clearSearch()" title="Xóa tìm kiếm"
@@ -323,6 +327,15 @@ footer { padding: 14px 28px; font-size: 11px; color: #9ca3af; border-top: 1px so
           <div class="wf-empty">Không có</div>
         </div>
       </div>
+      <div class="wf-stage s4">
+        <div class="wf-stage-hdr">
+          <span>📌 Post mới — Chờ set ads</span>
+          <span class="wf-stage-cnt" id="wf-cnt-4">0</span>
+        </div>
+        <div class="wf-cards-wrap" id="wf-col-4">
+          <div class="wf-empty">Không có</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -331,7 +344,7 @@ footer { padding: 14px 28px; font-size: 11px; color: #9ca3af; border-top: 1px so
 
 <script>
 let DB_UPDATED = "2026-05-30";
-const DB_UPDATED_TIME = "22:28";
+const DB_UPDATED_TIME = "08:50";
 const LINKS = [
   {
     "id": "CDVBA_Album_DangKyTDChung_0525_3185",
@@ -7347,6 +7360,9 @@ function rowHtml(l) {
       const pDisp = pnd ? _pndDisp(pnd) : '?';
       inner = `<span class="wf-tag">⏳ Chờ set ads — hạn: ${pDisp}</span>`
             + `<button class="btn-wf btn-wf-4" onclick="doWf('${safeId}','completed')">✅ Đã set ads</button>`;
+    } else if (ws === 'new_set_waiting') {
+      inner = `<span class="wf-tag">📌 Post mới – Chờ set ads</span>`
+            + `<button class="btn-wf btn-wf-4" onclick="doWfNewComplete('${safeId}')">✅ Đã set ads</button>`;
     } else if (ws === 'completed') {
       inner = `<span class="wf-done">✅ Hoàn thành</span>`
             + `<button class="btn-wf btn-wf-r" onclick="doWf('${safeId}','')">↺ Reset</button>`;
@@ -7369,7 +7385,7 @@ function rowHtml(l) {
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
-let aP='all', aS='all', aLang='all', aPerson='all', q='';
+let aP='all', aS='all', aLang='all', aPerson='all', aAdsPic='all', q='';
 const LANG_PROG_MAP = {
   'Đức':'Tiếng Đức','Pháp':'Tiếng Pháp','Hàn':'Tiếng Hàn','Thái':'Tiếng Thái',
   'TBN':'Tiếng Tây Ban Nha','Trung':'Tiếng Trung','Nhật':'Tiếng Nhật',
@@ -7394,6 +7410,7 @@ function render() {
     else if (aP !== 'all' && l.program !== aP) return false;
     if (aLang !== 'all' && l.program !== (LANG_PROG_MAP[aLang]||aLang)) return false;
     if (aPerson !== 'all' && (l.person||null) !== aPerson) return false;
+    if (aAdsPic !== 'all' && (l.ads_pic||'') !== aAdsPic) return false;
     if (q) {
       const qq = q.toLowerCase();
       if (!l.url.toLowerCase().includes(qq) && !l.section.toLowerCase().includes(qq) &&
@@ -7463,6 +7480,7 @@ function renderWorkflowBoard() {
     else if (aP !== 'all' && l.program !== aP) return false;
     if (aLang !== 'all' && l.program !== (LANG_PROG_MAP[aLang]||aLang)) return false;
     if (aPerson !== 'all' && (l.person||null) !== aPerson) return false;
+    if (aAdsPic !== 'all' && (l.ads_pic||'') !== aAdsPic) return false;
     return true;
   }
 
@@ -7480,6 +7498,7 @@ function renderWorkflowBoard() {
   const s1 = inWf.filter(l => l.workflow_state === 'gro_requested');
   const s2 = inWf.filter(l => l.workflow_state === 'gro_done');
   const s3 = inWf.filter(l => l.workflow_state === 'upd_done');
+  const s4 = inWf.filter(l => l.workflow_state === 'new_set_waiting');
 
   const total = s0.length + inWf.length;
   document.getElementById('wf-total').textContent = total + ' link cần xử lý';
@@ -7488,6 +7507,7 @@ function renderWorkflowBoard() {
   document.getElementById('wf-cnt-1').textContent = s1.length;
   document.getElementById('wf-cnt-2').textContent = s2.length;
   document.getElementById('wf-cnt-3').textContent = s3.length;
+  document.getElementById('wf-cnt-4').textContent = s4.length;
 
   function statusBadgeHtml(st) {
     const map = {
@@ -7521,6 +7541,8 @@ function renderWorkflowBoard() {
       actionBtn = `<button class="btn-wf btn-wf-3" onclick="doWfDate('${safeId}')">✅ Đã cập nhật + nhập hạn mới</button>`;
     else if (l.workflow_state === 'upd_done')
       actionBtn = `<button class="btn-wf btn-wf-4" onclick="doWf('${safeId}','completed')">✅ Đã set ads${pnd ? ' (đến ' + pnd + ')' : ''}</button>`;
+    else if (l.workflow_state === 'new_set_waiting')
+      actionBtn = `<button class="btn-wf btn-wf-4" onclick="doWfNewComplete('${safeId}')">✅ Đã set ads (post mới)</button>`;
     const resetBtn = l.workflow_state
       ? `<button class="btn-wf btn-wf-r" onclick="doWf('${safeId}','')">↺ Reset</button>` : '';
     const stopBtnCard = `<button class="btn-wf btn-wf-stop" onclick="doStop('${safeId}')">⏹ Ngừng</button>`;
@@ -7556,8 +7578,8 @@ function renderWorkflowBoard() {
   document.getElementById('wf-col-0').innerHTML = s0sorted.length
     ? s0sorted.map(wfCardHtml).join('')
     : '<div class="wf-empty">Không có link nào cần xử lý</div>';
-  ['1','2','3'].forEach(function(n, i) {
-    const list = [s1,s2,s3][i];
+  ['1','2','3','4'].forEach(function(n, i) {
+    const list = [s1,s2,s3,s4][i];
     document.getElementById('wf-col-'+n).innerHTML = list.length
       ? list.map(wfCardHtml).join('')
       : '<div class="wf-empty">Không có link nào</div>';
@@ -7583,6 +7605,7 @@ function renderActive() {
 }
 document.getElementById('lang-sel').addEventListener('change',e=>{aLang=e.target.value;renderActive();});
 document.getElementById('person-sel').addEventListener('change',e=>{aPerson=e.target.value;renderActive();});
+document.getElementById('adspic-sel').addEventListener('change',e=>{aAdsPic=e.target.value;renderActive();});
 document.getElementById('q').addEventListener('input',e=>{
   q=e.target.value.trim().toLowerCase();
   document.getElementById('btn-clear-q').style.display = q ? 'block' : 'none';
@@ -7626,6 +7649,7 @@ function toggleRenewal(id) {
     else if (aP!=='all' && l.program!==aP) return false;
     if (aLang!=='all' && l.program!==(LANG_PROG_MAP[aLang]||aLang)) return false;
     if (aPerson!=='all' && (l.person||null)!==aPerson) return false;
+    if (aAdsPic!=='all' && (l.ads_pic||'')!==aAdsPic) return false;
     return true;
   });
   updateCards(base);
@@ -8007,6 +8031,14 @@ function doStop(id) {
       stopBtns.forEach(function(b) { b.disabled = false; b.style.opacity = ''; b.textContent = '⏹ Ngừng'; });
       alert('Lỗi kết nối: ' + err.message);
     });
+}
+
+function doWfNewComplete(id) {
+  // Post mới — Ads PIC xác nhận đã set ads, không cần nhập hạn (đã có trong Sheet)
+  var user  = _getUser();
+  var link  = LINKS.find(function(l) { return l.id === id; });
+  var postUrl = link ? (link.url || '') : '';
+  _callWfApi(id, 'new_completed', '', user, postUrl);
 }
 
 function doWfDate(id) {
