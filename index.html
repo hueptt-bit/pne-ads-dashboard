@@ -344,7 +344,7 @@ footer { padding: 14px 28px; font-size: 11px; color: #9ca3af; border-top: 1px so
 
 <script>
 let DB_UPDATED = "2026-05-30";
-const DB_UPDATED_TIME = "09:20";
+const DB_UPDATED_TIME = "09:51";
 const LINKS = [
   {
     "id": "CDVBA_Album_DangKyTDChung_0525_3185",
@@ -7760,6 +7760,23 @@ function processSheetRows(rows) {
     DB_UPDATED = new Date().toISOString().slice(0,10);
     document.getElementById('db-meta').textContent = 'Sheet: ' + now + ' · ' + LINKS.length + ' link';
     render();
+    // Populate Ads PIC dropdown từ data thực (debug + luôn chính xác)
+    (function() {
+      var picSet = {};
+      LINKS.forEach(function(l) { if (l.ads_pic) picSet[l.ads_pic] = true; });
+      var pics = Object.keys(picSet).sort();
+      console.log('[Debug] ads_pic values from GAS:', pics.length ? pics : '⚠ EMPTY — GAS chưa trả ads_pic');
+      var sel = document.getElementById('adspic-sel');
+      var curVal = sel.value;
+      while (sel.options.length > 1) sel.remove(1);
+      pics.forEach(function(name) {
+        var opt = document.createElement('option');
+        opt.value = name; opt.text = name;
+        sel.add(opt);
+      });
+      if (curVal !== 'all' && picSet[curVal]) sel.value = curVal;
+      else { sel.value = 'all'; aAdsPic = 'all'; }
+    })();
   } catch(err) {
     setStatus(statusEl, '⚠ Lỗi xử lý sheet — ' + err.message, '#92400e');
     console.warn('Sheet error:', err);
