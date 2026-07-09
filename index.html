@@ -344,7 +344,7 @@ footer { padding: 14px 28px; font-size: 11px; color: #9ca3af; border-top: 1px so
 
 <script>
 let DB_UPDATED = "2026-05-30";
-const DB_UPDATED_TIME = "10:37";
+const DB_UPDATED_TIME = "11:07";
 const LINKS = [
   {
     "id": "CDVBA_Album_DangKyTDChung_0525_3185",
@@ -7739,7 +7739,7 @@ function processSheetRows(rows) {
         note: note,
         page: page,
         person: person,
-        ads_pic: (get('ads_pic') || get('Ads PIC') || get(13, '')).toString().trim(),
+        ads_pic: (get('ads_pic') || get('Ads PIC') || get(13, '')).toString().trim().normalize('NFC'),
         needs_renewal: needs_renewal,
         workflow_state:   (get('workflow_state')   || '').toString().trim(),
         pending_new_date: (get('pending_new_date') || '').toString().trim()
