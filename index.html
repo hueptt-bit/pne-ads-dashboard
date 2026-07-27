@@ -7424,6 +7424,7 @@ function render() {
 
   // Cập nhật badge "Đang xử lý" = link hết/sắp hết chưa có workflow + link đang trong workflow
   const wfBadge = LINKS.filter(l => {
+    if (l.active === false) return false;            // Ngừng chạy → không tính vào Đang xử lý
     if ((l.workflow_state||'') !== '') return true;
     return ['HẾT HẠN','GIA HẠN','SẮP HẾT'].includes(getStatus(l));
   }).length;
@@ -7431,7 +7432,7 @@ function render() {
 
   // Rows: thêm lọc theo status tab để hiện bảng
   const rows = base.filter(l => {
-    if (aS === 'WORKFLOW') return (l.workflow_state || '') !== '';
+    if (aS === 'WORKFLOW') return l.active !== false && (l.workflow_state || '') !== '';
     const st = getStatus(l);
     if (aS !== 'all' && st !== aS) return false;
     return true;
@@ -7494,7 +7495,7 @@ function renderWorkflowBoard() {
     const st = getStatus(l);
     return NEED_ACTION_STATUSES.includes(st);
   });
-  const inWf = LINKS.filter(l => matchProg(l) && (l.workflow_state||'') !== '');
+  const inWf = LINKS.filter(l => matchProg(l) && l.active !== false && (l.workflow_state||'') !== '');
   const s1 = inWf.filter(l => l.workflow_state === 'gro_requested');
   const s2 = inWf.filter(l => l.workflow_state === 'gro_done');
   const s3 = inWf.filter(l => l.workflow_state === 'upd_done');
@@ -7901,6 +7902,7 @@ function updateTabCounts() {
   document.getElementById('cnt-khac').textContent  = LINKS.filter(l=>['Thuê Phòng','EduCRM'].includes(l.program)).length;
   // Badge = link đang trong workflow + link hết/sắp hết chưa bắt đầu workflow
   const wfCount = LINKS.filter(l => {
+    if (l.active === false) return false;            // Ngừng chạy → không tính vào Đang xử lý
     if ((l.workflow_state||'') !== '') return true;
     return ['HẾT HẠN','GIA HẠN','SẮP HẾT'].includes(getStatus(l));
   }).length;
@@ -8037,7 +8039,7 @@ function doStop(id) {
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.ok) {
-        if (link) { link.active = false; }
+        if (link) { link.active = false; link.workflow_state = ''; link.pending_new_date = ''; }
         if (document.getElementById('wf-board').style.display === 'block') renderWorkflowBoard();
         else render();
       } else {
